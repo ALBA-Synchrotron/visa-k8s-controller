@@ -1,0 +1,32 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - cloudprovider.visa.k8s
+  resources:
+  - visainstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloudprovider.visa.k8s
+  resources:
+  - visainstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - cloudprovider.visa.k8s
+  resources:
+  - visainstances/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -12,7 +12,7 @@ spec:
     name: "standard-analysis"
   securityGroups:
     - name: "INSTANCE_SUDOERS"
-  desiredState: ACTIVE
+  desiredState: "ACTIVE"
   rebootGeneration: 0
   associatedProposals:
     - "2029251244"

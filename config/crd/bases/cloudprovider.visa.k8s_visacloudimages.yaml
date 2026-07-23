@@ -1,0 +1,62 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.21.0
+  name: visacloudimages.cloudprovider.visa.k8s
+spec:
+  group: cloudprovider.visa.k8s
+  names:
+    kind: VISACloudImage
+    listKind: VISACloudImageList
+    plural: visacloudimages
+    singular: visacloudimage
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              fullImageReference:
+                minLength: 1
+                type: string
+              homeTemplatePath:
+                minLength: 1
+                type: string
+              size:
+                format: float
+                type: string
+              userShell:
+                minLength: 1
+                type: string
+            required:
+            - fullImageReference
+            - homeTemplatePath
+            - size
+            - userShell
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true

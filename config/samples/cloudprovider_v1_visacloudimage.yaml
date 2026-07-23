@@ -6,4 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: visacloudimage-sample
 spec:
-  # TODO(user): Add fields here
+  fullImageReference: "redacted.cells.es"
+  size: "2098.21"
+  homeTemplatePath: "/etc/visa_home_template/"
+  userShell: "/usr/bin/bash"

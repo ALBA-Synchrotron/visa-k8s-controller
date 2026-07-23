@@ -53,17 +53,13 @@ type LocalObjectReference struct {
 }
 
 type VISAInstanceSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
 
 	// +required
 	Image LocalObjectReference `json:"image"`
 	// +required
 	Flavour LocalObjectReference `json:"flavour"`
 	// +optional
-	SecurityGroups []string `json:"securityGroups,omitempty"`
+	SecurityGroups []LocalObjectReference `json:"securityGroups,omitempty"`
 	// +required
 	// +kubebuilder:validation:Enum:=ACTIVE;PARTIALLY_ACTIVE;DELETED;STOPPED
 	DesiredState DesiredInstanceState `json:"desiredState"`
@@ -89,6 +85,7 @@ type VISAInstanceStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Namespaced
 type VISAInstance struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional

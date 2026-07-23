@@ -38,6 +38,7 @@ type VISACloudFlavourSpec struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Namespaced
 type VISACloudFlavour struct {
 	metav1.TypeMeta `json:",inline"`
 

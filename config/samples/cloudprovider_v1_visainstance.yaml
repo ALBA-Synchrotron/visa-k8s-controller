@@ -6,4 +6,14 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: visainstance-sample
 spec:
-  # TODO(user): Add fields here
+  image:
+    name: "mx-base-prod"
+  flavour:
+    name: "standard-analysis"
+  securityGroups:
+    - name: "INSTANCE_SUDOERS"
+  desiredState: ACTIVE
+  rebootGeneration: 0
+  associatedProposals:
+    - "2029251244"
+    - "2029251241"

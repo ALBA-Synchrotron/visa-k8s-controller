@@ -17,7 +17,6 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: VISAInstance is the Schema for the visainstances API
         properties:
           apiVersion:
             description: |-
@@ -37,27 +36,57 @@ spec:
           metadata:
             type: object
           spec:
-            description: spec defines the desired state of VISAInstance
             properties:
-              foo:
-                description: foo is an example field of VISAInstance. Edit visainstance_types.go
-                  to remove/update
+              associatedProposals:
+                items:
+                  type: string
+                type: array
+              desiredState:
+                enum:
+                - ACTIVE
+                - PARTIALLY_ACTIVE
+                - DELETED
+                - STOPPED
                 type: string
+              flavour:
+                properties:
+                  name:
+                    minLength: 1
+                    type: string
+                required:
+                - name
+                type: object
+              image:
+                properties:
+                  name:
+                    minLength: 1
+                    type: string
+                required:
+                - name
+                type: object
+              rebootGeneration:
+                format: int64
+                type: integer
+              securityGroups:
+                items:
+                  properties:
+                    name:
+                      minLength: 1
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+            required:
+            - desiredState
+            - flavour
+            - image
             type: object
           status:
-            description: status defines the observed state of VISAInstance
             properties:
+              address:
+                type: string
               conditions:
-                description: |-
-                  conditions represent the current state of the VISAInstance resource.
-                  Each condition has a unique type and reflects the status of a specific aspect of the resource.
-
-                  Standard condition types include:
-                  - "Available": the resource is fully functional
-                  - "Progressing": the resource is being created or updated
-                  - "Degraded": the resource failed to reach or maintain its desired state
-
-                  The status of each condition is one of True, False, or Unknown.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -116,6 +145,26 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedRebootGeneration:
+                format: int64
+                type: integer
+              state:
+                enum:
+                - ACTIVE
+                - PARTIALLY_ACTIVE
+                - BUILDING
+                - DELETED
+                - DELETING
+                - ERROR
+                - STARTING
+                - STOPPED
+                - STOPPING
+                - REBOOTING
+                - UNAVAILABLE
+                - UNKNOWN
+                type: string
+            required:
+            - state
             type: object
         required:
         - spec

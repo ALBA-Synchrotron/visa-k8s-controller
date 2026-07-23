@@ -28,7 +28,7 @@ type VISACloudImageSpec struct {
 	FullImageReference string `json:"fullImageReference"`
 	// +required
 	// +kubebuilder:validation:Format=float
-	Size float32 `json:"size"`
+	Size string `json:"size"`
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	HomeTemplatePath string `json:"homeTemplatePath"`
@@ -38,6 +38,7 @@ type VISACloudImageSpec struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Namespaced
 type VISACloudImage struct {
 	metav1.TypeMeta `json:",inline"`
 

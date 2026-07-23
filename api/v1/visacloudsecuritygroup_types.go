@@ -22,24 +22,23 @@ import (
 )
 
 // +kubebuilder:object:root=true
-
-type VISALocalSecurityGroup struct {
+// +kubebuilder:resource:scope=Namespaced
+type VISACloudSecurityGroup struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitzero"`
 }
 
 // +kubebuilder:object:root=true
-
-type VISALocalSecurityGroupList struct {
+type VISACloudSecurityGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitzero"`
-	Items           []VISALocalSecurityGroup `json:"items"`
+	Items           []VISACloudSecurityGroup `json:"items"`
 }
 
 func init() {
 	SchemeBuilder.Register(func(s *runtime.Scheme) error {
-		s.AddKnownTypes(SchemeGroupVersion, &VISALocalSecurityGroup{}, &VISALocalSecurityGroupList{})
+		s.AddKnownTypes(SchemeGroupVersion, &VISACloudSecurityGroup{}, &VISACloudSecurityGroupList{})
 		return nil
 	})
 }

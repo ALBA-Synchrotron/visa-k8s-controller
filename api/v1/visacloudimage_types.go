@@ -38,7 +38,6 @@ type VISACloudImageSpec struct {
 }
 
 // +kubebuilder:object:root=true
-
 type VISACloudImage struct {
 	metav1.TypeMeta `json:",inline"`
 

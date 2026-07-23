@@ -4,4 +4,5 @@ resources:
 - cloudprovider_v1_visacloudflavour.yaml
 - cloudprovider_v1_visacloudimage.yaml
 - cloudprovider_v1_visasidecarconfig.yaml
+- cloudprovider_v1_visalocalsecuritygroup.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

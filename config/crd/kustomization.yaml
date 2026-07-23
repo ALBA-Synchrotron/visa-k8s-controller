@@ -7,6 +7,7 @@ resources:
 - bases/cloudprovider.visa.k8s_visacloudimages.yaml
 - bases/cloudprovider.visa.k8s_visasidecarconfigs.yaml
 - bases/cloudprovider.visa.k8s_visalocalsecuritygroups.yaml
+- bases/cloudprovider.visa.k8s_visaclouddevices.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

@@ -50,4 +50,12 @@ resources:
   kind: VISALocalSecurityGroup
   path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: visa.k8s
+  group: cloudprovider
+  kind: VISACloudDevice
+  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  version: v1
 version: "3"

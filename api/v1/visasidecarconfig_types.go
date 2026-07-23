@@ -37,6 +37,8 @@ type VISASidecarConfigSpec struct {
 	Ports []v1.ContainerPort `json:"ports,omitempty"`
 	// +required
 	DeploySidecar bool `json:"deploySidecar"`
+	// +optional
+	Env []v1.EnvVar `json:"env"`
 }
 
 // +kubebuilder:object:root=true

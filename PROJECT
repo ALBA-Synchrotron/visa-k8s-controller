@@ -18,4 +18,28 @@ resources:
   kind: VISAInstance
   path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: visa.k8s
+  group: cloudprovider
+  kind: VISACloudFlavour
+  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: visa.k8s
+  group: cloudprovider
+  kind: VISACloudImage
+  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: visa.k8s
+  group: cloudprovider
+  kind: VISASidecarConfig
+  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  version: v1
 version: "3"

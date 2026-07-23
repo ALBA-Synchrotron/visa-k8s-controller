@@ -22,6 +22,15 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the visa-k8s-controller itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- visasidecarconfig_admin_role.yaml
+- visasidecarconfig_editor_role.yaml
+- visasidecarconfig_viewer_role.yaml
+- visacloudimage_admin_role.yaml
+- visacloudimage_editor_role.yaml
+- visacloudimage_viewer_role.yaml
+- visacloudflavour_admin_role.yaml
+- visacloudflavour_editor_role.yaml
+- visacloudflavour_viewer_role.yaml
 - visainstance_admin_role.yaml
 - visainstance_editor_role.yaml
 - visainstance_viewer_role.yaml

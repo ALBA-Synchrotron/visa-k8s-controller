@@ -3,6 +3,9 @@
 # It should be run by config/default
 resources:
 - bases/cloudprovider.visa.k8s_visainstances.yaml
+- bases/cloudprovider.visa.k8s_visacloudflavours.yaml
+- bases/cloudprovider.visa.k8s_visacloudimages.yaml
+- bases/cloudprovider.visa.k8s_visasidecarconfigs.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

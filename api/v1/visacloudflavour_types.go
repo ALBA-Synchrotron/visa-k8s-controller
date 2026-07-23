@@ -17,74 +17,42 @@ limitations under the License.
 package v1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// VISACloudFlavourSpec defines the desired state of VISACloudFlavour
-type VISACloudFlavourSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
-
-	// foo is an example field of VISACloudFlavour. Edit visacloudflavour_types.go to remove/update
-	// +optional
-	Foo *string `json:"foo,omitempty"`
+type SidecarConfigRef struct {
+	// +kubebuilder:validation:MinLength=1
+	// +required
+	Name string `json:"name"`
 }
 
-// VISACloudFlavourStatus defines the observed state of VISACloudFlavour.
-type VISACloudFlavourStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// For Kubernetes API conventions, see:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
-
-	// conditions represent the current state of the VISACloudFlavour resource.
-	// Each condition has a unique type and reflects the status of a specific aspect of the resource.
-	//
-	// Standard condition types include:
-	// - "Available": the resource is fully functional
-	// - "Progressing": the resource is being created or updated
-	// - "Degraded": the resource failed to reach or maintain its desired state
-	//
-	// The status of each condition is one of True, False, or Unknown.
-	// +listType=map
-	// +listMapKey=type
+type VISACloudFlavourSpec struct {
 	// +optional
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	// +listType=map
+	// +listMapKey=name
+	Sidecars []SidecarConfigRef `json:"sidecars,omitempty"`
+	// +optional
+	Resources *v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-
-// VISACloudFlavour is the Schema for the visacloudflavours API
 type VISACloudFlavour struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// metadata is a standard object metadata
 	// +optional
-	metav1.ObjectMeta `json:"metadata,omitzero"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// spec defines the desired state of VISACloudFlavour
 	// +required
 	Spec VISACloudFlavourSpec `json:"spec"`
-
-	// status defines the observed state of VISACloudFlavour
-	// +optional
-	Status VISACloudFlavourStatus `json:"status,omitzero"`
 }
 
 // +kubebuilder:object:root=true
-
-// VISACloudFlavourList contains a list of VISACloudFlavour
 type VISACloudFlavourList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitzero"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []VISACloudFlavour `json:"items"`
 }
 

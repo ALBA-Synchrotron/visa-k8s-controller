@@ -44,7 +44,6 @@ spec:
                 minLength: 1
                 type: string
               size:
-                format: float
                 type: string
               userShell:
                 minLength: 1

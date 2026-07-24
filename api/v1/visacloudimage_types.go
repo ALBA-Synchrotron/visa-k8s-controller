@@ -27,7 +27,6 @@ type VISACloudImageSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	FullImageReference string `json:"fullImageReference"`
 	// +required
-	// +kubebuilder:validation:Format=float
 	Size string `json:"size"`
 	// +required
 	// +kubebuilder:validation:MinLength=1

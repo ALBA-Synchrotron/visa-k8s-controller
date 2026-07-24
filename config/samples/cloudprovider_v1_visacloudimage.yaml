@@ -1,0 +1,12 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISACloudImage
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: visacloudimage-sample
+spec:
+  fullImageReference: "redacted.cells.es"
+  size: "2098.21"
+  homeTemplatePath: "/etc/visa_home_template/"
+  userShell: "/usr/bin/bash"

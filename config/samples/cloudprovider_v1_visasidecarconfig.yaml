@@ -1,0 +1,28 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISASidecarConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: visasidecarconfig-sample
+spec:
+  fullImageReference: "redacted.cells.es/visa/guacd:latest"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    command:
+      - /usr/bin/guacd
+    args: []
+    ports:
+      - containerPort: 4822
+        protocol: TCP
+        hostIP: 0.0.0.0
+        hostPort: 4822
+    deploySidecar: true
+    env:
+      - name: LEL
+        value: "yeah"

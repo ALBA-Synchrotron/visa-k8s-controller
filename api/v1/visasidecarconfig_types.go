@@ -27,7 +27,7 @@ type VISASidecarConfigSpec struct {
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	FullImageReference string `json:"fullImageReference"`
-	// +required
+	// +optional
 	Resources v1.ResourceRequirements `json:"resources"`
 	// +optional
 	Command []string `json:"command,omitempty"`

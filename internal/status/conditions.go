@@ -1,8 +1,6 @@
 package status
 
 import (
-	"strings"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,18 +31,19 @@ func newVISAInstanceCondition(conditionType VISAInstanceConditionType) VISAInsta
 	return VISAInstanceCondition{
 		Type:               conditionType,
 		Status:             corev1.ConditionUnknown,
-		LastTransitionTime: metav1.Time{},
+		LastTransitionTime: metav1.Now(),
 	}
 }
 
-func (condition *VISAInstanceCondition) UpdateState(status corev1.ConditionStatus) {
-	if condition.Status != status {
-		condition.LastTransitionTime = metav1.Now()
+func (c *VISAInstanceCondition) SetStatus(status corev1.ConditionStatus) {
+	if c.Status != status {
+		c.Status = status
+		c.LastTransitionTime = metav1.Now()
 	}
-	condition.Status = status
 }
 
-func (condition *VISAInstanceCondition) UpdateReason(reason string, messages ...string) {
-	condition.Reason = reason
-	condition.Message = strings.Join(messages, ". ")
+func (c *VISAInstanceCondition) Set(status corev1.ConditionStatus, reason, message string) {
+	c.SetStatus(status)
+	c.Reason = reason
+	c.Message = message
 }

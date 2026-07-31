@@ -4,17 +4,16 @@ type InstanceState string
 type DesiredInstanceState string
 
 const (
-	StateActive          InstanceState = "ACTIVE"
-	StatePartiallyActive InstanceState = "PARTIALLY_ACTIVE"
-	StateBuilding        InstanceState = "BUILDING"
-	StateDeleting        InstanceState = "DELETING"
-	StateError           InstanceState = "ERROR"
-	StateStarting        InstanceState = "STARTING"
-	StateStopped         InstanceState = "STOPPED"
-	StateStopping        InstanceState = "STOPPING"
-	StateRebooting       InstanceState = "REBOOTING"
-	StateUnavailable     InstanceState = "UNAVAILABLE"
-	StateUnknown         InstanceState = "UNKNOWN"
+	StateActive      InstanceState = "ACTIVE"
+	StateBuilding    InstanceState = "BUILDING"
+	StateDeleting    InstanceState = "DELETING"
+	StateError       InstanceState = "ERROR"
+	StateStarting    InstanceState = "STARTING"
+	StateStopped     InstanceState = "STOPPED"
+	StateStopping    InstanceState = "STOPPING"
+	StateRebooting   InstanceState = "REBOOTING"
+	StateUnavailable InstanceState = "UNAVAILABLE"
+	StateUnknown     InstanceState = "UNKNOWN"
 )
 
 const (

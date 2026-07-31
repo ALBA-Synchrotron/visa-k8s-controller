@@ -18,7 +18,6 @@ package v1
 
 import (
 	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
-	corev1 "k8s.io/api/core/v1"
 )
 
 type VISAInstanceStatus struct {
@@ -34,15 +33,4 @@ type VISAInstanceStatus struct {
 	Address *string `json:"address,omitempty"`
 	// +optional
 	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
-}
-
-func (instanceStatus *VISAInstanceStatus) SetCondition(condType status.VISAInstanceConditionType,
-	condStatus corev1.ConditionStatus, reason string, messages ...string) {
-	for i := range instanceStatus.Conditions {
-		if instanceStatus.Conditions[i].Type == condType {
-			instanceStatus.Conditions[i].UpdateState(condStatus)
-			instanceStatus.Conditions[i].UpdateReason(reason, messages...)
-			break
-		}
-	}
 }

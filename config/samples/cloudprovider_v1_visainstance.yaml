@@ -4,14 +4,23 @@ metadata:
   labels:
     app.kubernetes.io/name: visa-k8s-controller
     app.kubernetes.io/managed-by: kustomize
+    cloudprovider.visa.k8s/id: "21"
+    cloudprovider.visa.k8s/uid: "ahz7gasd"
+  annotations:
+    cloudprovider.visa.k8s/instruments: "bl04,bl09,bl01"
+    cloudprovider.visa.k8s/proposals: "2029251244,2029251241,2029251242"
+    cloudprovider.visa.k8s/screenWidth: "1920"
+    cloudprovider.visa.k8s/screenHeight: "1080"
+    cloudprovider.visa.k8s/owner: "user123"
+    cloudprovider.visa.k8s/pamPublicKey: "ASDASDASD"
   name: visainstance-sample
 spec:
   image:
-    name: "mx-base-prod"
+    name: "debian12-test-image"
   flavour:
-    name: "standard-analysis"
+    name: "all-aux-services"
   securityGroups:
-    - name: "INSTANCE_SUDOERS"
+    - name: "instance-sudoers"
   desiredState: "ACTIVE"
   rebootGeneration: 0
   associatedProposals:

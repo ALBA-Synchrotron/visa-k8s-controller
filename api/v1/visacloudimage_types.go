@@ -22,18 +22,17 @@ import (
 )
 
 type VISACloudImageSpec struct {
-
-	// +required
-	// +kubebuilder:validation:MinLength=1
-	FullImageReference string `json:"fullImageReference"`
-	// +required
-	Size string `json:"size"`
+	// required
+	ContainerSpec `json:"containerSpec"`
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	HomeTemplatePath string `json:"homeTemplatePath"`
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	UserShell string `json:"userShell"`
+	// +required
+	// +kubebuilder:validation:MinLength=1
+	Size string `json:"size"`
 }
 
 // +kubebuilder:object:root=true

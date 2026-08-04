@@ -9,7 +9,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *VISAInstanceReconciler) reconcilePod(ctx context.Context, desired *corev1.Pod) error {
+func (r *VISAInstanceReconciler) reconcilePod(
+	ctx context.Context,
+	instance *cloudproviderv1.VISAInstance,
+	desired *corev1.Pod,
+) error {
 
 	current := &corev1.Pod{}
 
@@ -20,7 +24,27 @@ func (r *VISAInstanceReconciler) reconcilePod(ctx context.Context, desired *core
 
 	switch {
 	case apierrors.IsNotFound(err):
-		return r.Create(ctx, desired)
+		if err := r.Create(ctx, desired); err != nil {
+			r.Recorder.Eventf(
+				instance,
+				corev1.EventTypeWarning,
+				"ProvisionFailed",
+				"Failed to create backing pod %q: %v",
+				desired.Name,
+				err,
+			)
+			return err
+		}
+
+		r.Recorder.Eventf(
+			instance,
+			corev1.EventTypeNormal,
+			"Provisioned",
+			"Created backing pod %q",
+			desired.Name,
+		)
+
+		return nil
 
 	case err != nil:
 		return err
@@ -30,7 +54,27 @@ func (r *VISAInstanceReconciler) reconcilePod(ctx context.Context, desired *core
 	currentHash := current.Annotations["cloudprovider.visa.k8s/spec-hash"]
 
 	if currentHash != desiredHash {
-		return r.Delete(ctx, current)
+		if current.DeletionTimestamp.IsZero() {
+			r.Recorder.Eventf(
+				instance,
+				corev1.EventTypeNormal,
+				"Reprovisioning",
+				"Backing pod %q is outdated and will be recreated",
+				current.Name,
+			)
+
+			if err := r.Delete(ctx, current); err != nil {
+				r.Recorder.Eventf(
+					instance,
+					corev1.EventTypeWarning,
+					"ReprovisionFailed",
+					"Failed to delete backing pod %q: %v",
+					current.Name,
+					err,
+				)
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -44,15 +88,45 @@ func (r *VISAInstanceReconciler) deletePod(ctx context.Context, instance *cloudp
 		Name:      instance.Name + "-runtime",
 	}, pod)
 
-	switch {
-	case apierrors.IsNotFound(err):
-		return nil
+	if pod.DeletionTimestamp.IsZero() {
 
-	case err != nil:
-		return err
+		switch {
+		case apierrors.IsNotFound(err):
+			return nil
+
+		case err != nil:
+			r.Recorder.Eventf(
+				instance,
+				corev1.EventTypeWarning,
+				"DeprovisionFailed",
+				"Failed to retrieve backing pod: %v",
+				err,
+			)
+			return err
+		}
+
+		if err := r.Delete(ctx, pod); err != nil {
+			r.Recorder.Eventf(
+				instance,
+				corev1.EventTypeWarning,
+				"DeprovisionFailed",
+				"Failed to delete backing pod %q: %v",
+				pod.Name,
+				err,
+			)
+			return err
+		}
+
+		r.Recorder.Eventf(
+			instance,
+			corev1.EventTypeNormal,
+			"Deprovisioned",
+			"Deleted backing pod %q",
+			pod.Name,
+		)
 	}
 
-	return r.Delete(ctx, pod)
+	return nil
 }
 
 func (r *VISAInstanceReconciler) getPod(ctx context.Context, instance *cloudproviderv1.VISAInstance) (*corev1.Pod, error) {

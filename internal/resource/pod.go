@@ -14,13 +14,14 @@ type PodBuilder struct{}
 
 func buildContainer(name string, spec *v1.ContainerSpec) corev1.Container {
 	return corev1.Container{
-		Name:      name,
-		Image:     spec.FullImageReference,
-		Resources: spec.Resources,
-		Command:   spec.Command,
-		Args:      spec.Args,
-		Ports:     spec.Ports,
-		Env:       spec.Env,
+		Name:            name,
+		Image:           spec.FullImageReference,
+		Resources:       spec.Resources,
+		Command:         spec.Command,
+		Args:            spec.Args,
+		Ports:           spec.Ports,
+		Env:             spec.Env,
+		ImagePullPolicy: spec.ImagePullPolicy,
 	}
 }
 
@@ -32,7 +33,7 @@ func copyMap(src map[string]string) map[string]string {
 	return dst
 }
 
-func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.ResolvedConfig) *corev1.Pod {
+func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.ResolvedConfig, imagePullSecrets []corev1.LocalObjectReference) *corev1.Pod {
 
 	containers := make([]corev1.Container, 0, len(config.Sidecars)+1)
 
@@ -65,7 +66,9 @@ func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.Resolved
 			Annotations: annotations,
 		},
 		Spec: corev1.PodSpec{
-			Containers: containers,
+			Containers:       containers,
+			DNSPolicy:        config.Image.Spec.DNSPolicy,
+			ImagePullSecrets: imagePullSecrets,
 		},
 	}
 

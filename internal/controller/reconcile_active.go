@@ -26,7 +26,7 @@ func (r *VISAInstanceReconciler) reconcileActive(ctx context.Context, visaInstan
 		return ctrl.Result{}, err
 	}
 
-	desiredPod := resource.PodBuilder{}.Build(visaInstance, resolvedConfig)
+	desiredPod := resource.PodBuilder{}.Build(visaInstance, resolvedConfig, r.ImagePullSecrets)
 
 	if err := controllerutil.SetControllerReference(
 		visaInstance,

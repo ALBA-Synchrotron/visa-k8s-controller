@@ -28,4 +28,7 @@ type ContainerSpec struct {
 	Args []string `json:"args,omitempty"`
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Enum:=Always;Never;IfNotPresent
+	ImagePullPolicy corev1.PullPolicy
 }

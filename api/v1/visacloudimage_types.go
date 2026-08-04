@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -33,6 +34,9 @@ type VISACloudImageSpec struct {
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	Size string `json:"size"`
+	// +optional
+	// +kubebuilder:validation:Enum:=ClusterFirstWithHostNet;ClusterFirst;Default
+	v1.DNSPolicy
 }
 
 // +kubebuilder:object:root=true

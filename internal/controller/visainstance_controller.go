@@ -33,8 +33,9 @@ import (
 
 type VISAInstanceReconciler struct {
 	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Scheme           *runtime.Scheme
+	Recorder         record.EventRecorder
+	ImagePullSecrets []corev1.LocalObjectReference
 }
 
 const (

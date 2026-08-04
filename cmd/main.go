@@ -20,10 +20,13 @@ import (
 	"crypto/tls"
 	"flag"
 	"os"
+	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -102,6 +105,15 @@ func main() {
 		tlsOpts = append(tlsOpts, disableHTTP2)
 	}
 
+	operatorNamespace := os.Getenv("OPERATOR_NAMESPACE")
+	if operatorNamespace == "" {
+		setupLog.Info("unable to find operator namespace")
+		os.Exit(1)
+	}
+
+	// If the environment variable is not set Getenv returns an empty string which ctrl.Options.Namespace takes to mean all namespaces should be watched
+	operatorScopeNamespace := os.Getenv("OPERATOR_SCOPE_NAMESPACE")
+
 	// Initial webhook TLS options
 	webhookTLSOpts := tlsOpts
 	webhookServerOptions := webhook.Options{
@@ -137,24 +149,7 @@ func main() {
 		metricsServerOptions.FilterProvider = filters.WithAuthenticationAndAuthorization
 	}
 
-	// If the certificate is not specified, controller-runtime will automatically
-	// generate self-signed certificates for the metrics server. While convenient for development and testing,
-	// this setup is not recommended for production.
-	//
-	// TODO(user): If you enable certManager, uncomment the following lines:
-	// - [METRICS-WITH-CERTS] at config/default/kustomization.yaml to generate and use certificates
-	// managed by cert-manager for the metrics server.
-	// - [PROMETHEUS-WITH-CERTS] at config/prometheus/kustomization.yaml for TLS certification.
-	if len(metricsCertPath) > 0 {
-		setupLog.Info("Initializing metrics certificate watcher using provided certificates",
-			"metrics-cert-path", metricsCertPath, "metrics-cert-name", metricsCertName, "metrics-cert-key", metricsCertKey)
-
-		metricsServerOptions.CertDir = metricsCertPath
-		metricsServerOptions.CertName = metricsCertName
-		metricsServerOptions.KeyName = metricsCertKey
-	}
-
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	options := ctrl.Options{
 		Scheme:                 scheme,
 		Metrics:                metricsServerOptions,
 		WebhookServer:          webhookServer,
@@ -172,16 +167,51 @@ func main() {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-	})
+	}
+
+	if operatorScopeNamespace != "" {
+		if strings.Contains(operatorScopeNamespace, ",") {
+			namespaces := strings.Split(operatorScopeNamespace, ",")
+			// https://github.com/kubernetes-sigs/controller-runtime/blob/main/designs/cache_options.md#only-cache-namespaced-objects-in-the-foo-and-bar-namespace
+			// Sometimes I wish that controller-runtime graduated to 1.x
+			// This changed in 0.15, and again in 0.16 🤦
+			options.Cache.DefaultNamespaces = make(map[string]cache.Config)
+			for _, namespace := range namespaces {
+				options.Cache.DefaultNamespaces[namespace] = cache.Config{}
+			}
+			setupLog.Info("limiting watch to specific namespaces for RabbitMQ resources", "namespaces", namespaces)
+		} else {
+			options.Cache = cache.Options{
+				DefaultNamespaces: map[string]cache.Config{operatorScopeNamespace: {}},
+			}
+			setupLog.Info("limiting watch to one namespace", "namespace", operatorScopeNamespace)
+		}
+	}
+
+	// If the certificate is not specified, controller-runtime will automatically
+	// generate self-signed certificates for the metrics server. While convenient for development and testing,
+	// this setup is not recommended for production.
+	//
+	if len(metricsCertPath) > 0 {
+		setupLog.Info("Initializing metrics certificate watcher using provided certificates",
+			"metrics-cert-path", metricsCertPath, "metrics-cert-name", metricsCertName, "metrics-cert-key", metricsCertKey)
+
+		metricsServerOptions.CertDir = metricsCertPath
+		metricsServerOptions.CertName = metricsCertName
+		metricsServerOptions.KeyName = metricsCertKey
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		setupLog.Error(err, "Failed to start manager")
 		os.Exit(1)
 	}
 
 	if err := (&controller.VISAInstanceReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("visainstance-controller"),
+		Client:           mgr.GetClient(),
+		Scheme:           mgr.GetScheme(),
+		Recorder:         mgr.GetEventRecorderFor("visainstance-controller"),
+		ImagePullSecrets: imagePullSecretsFromEnv(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "visainstance")
 		os.Exit(1)
@@ -202,4 +232,27 @@ func main() {
 		setupLog.Error(err, "Failed to run manager")
 		os.Exit(1)
 	}
+}
+
+func imagePullSecretsFromEnv() []corev1.LocalObjectReference {
+	value := strings.TrimSpace(os.Getenv("IMAGE_PULL_SECRETS"))
+	if value == "" {
+		return nil
+	}
+
+	names := strings.Split(value, ",")
+
+	secrets := make([]corev1.LocalObjectReference, 0, len(names))
+	for _, name := range names {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+
+		secrets = append(secrets, corev1.LocalObjectReference{
+			Name: name,
+		})
+	}
+
+	return secrets
 }

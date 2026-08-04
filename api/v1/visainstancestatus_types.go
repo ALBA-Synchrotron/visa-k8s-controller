@@ -16,19 +16,15 @@ limitations under the License.
 
 package v1
 
-import (
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
-)
-
 type VISAInstanceStatus struct {
 
 	// +listType=map
 	// +listMapKey=type
 	// +optional
-	Conditions []status.VISAInstanceCondition `json:"conditions,omitempty"`
+	Conditions []VISAInstanceCondition `json:"conditions,omitempty"`
 	// +required
 	// +kubebuilder:validation:Enum:=ACTIVE;PARTIALLY_ACTIVE;BUILDING;DELETED;DELETING;ERROR;STARTING;STOPPED;STOPPING;REBOOTING;UNAVAILABLE;UNKNOWN
-	State status.InstanceState `json:"state"`
+	State InstanceState `json:"state"`
 	// +optional
 	Address *string `json:"address,omitempty"`
 	// +optional

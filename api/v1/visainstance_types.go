@@ -17,7 +17,6 @@ limitations under the License.
 package v1
 
 import (
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -32,7 +31,7 @@ type VISAInstanceSpec struct {
 	SecurityGroups []LocalObjectReference `json:"securityGroups,omitempty"`
 	// +required
 	// +kubebuilder:validation:Enum:=ACTIVE;DELETED;STOPPED
-	DesiredState status.DesiredInstanceState `json:"desiredState"`
+	DesiredState DesiredInstanceState `json:"desiredState"`
 	// +optional
 	RebootGeneration int64 `json:"rebootGeneration,omitempty"`
 	// +optional

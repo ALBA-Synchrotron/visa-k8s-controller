@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -47,6 +46,11 @@ const (
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances/finalizers,verbs=update
 
 func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	var (
+		result ctrl.Result
+		err    error
+	)
+
 	logger := logf.FromContext(ctx)
 
 	logger.Info("Reconciling VISAInstance")
@@ -65,7 +69,6 @@ func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			"PausedReconciliation", fmt.Sprintf("label '%s' is set to true", pauseReconciliationLabel))
 
 		patch := client.MergeFrom(visaInstance.DeepCopy())
-		// TODO: Change this visaInstance.Status.SetCondition(status.NoWarnings, corev1.ConditionFalse, "reconciliation paused")
 		if writerErr := r.Status().Patch(ctx, visaInstance, patch); writerErr != nil {
 			logger.Error(writerErr, "Error trying to Patch NoWarnings condition state")
 		}
@@ -81,15 +84,22 @@ func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	switch visaInstance.Spec.DesiredState {
-	case status.DesiredStateActive:
-		return r.reconcileActive(ctx, visaInstance)
+	case cloudproviderv1.DesiredStateActive:
+		result, err = r.reconcileActive(ctx, visaInstance)
 
-	case status.DesiredStateStopped:
-		return r.reconcileStopped(ctx, visaInstance)
+	case cloudproviderv1.DesiredStateStopped:
+		result, err = r.reconcileStopped(ctx, visaInstance)
 
 	default:
-		return ctrl.Result{}, nil
+		result = ctrl.Result{}
 	}
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+
 }
 
 func (r *VISAInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {

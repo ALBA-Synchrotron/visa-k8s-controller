@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +20,7 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 				Flavour: LocalObjectReference{
 					Name: "test-flavour",
 				},
-				DesiredState: status.DesiredStateActive,
+				DesiredState: DesiredStateActive,
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, device)).To(gomega.Succeed())
@@ -40,7 +39,7 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 				Flavour: LocalObjectReference{
 					Name: "test-flavour",
 				},
-				DesiredState: status.DesiredStateActive,
+				DesiredState: DesiredStateActive,
 			},
 		}
 		err := k8sClient.Create(ctx, device)

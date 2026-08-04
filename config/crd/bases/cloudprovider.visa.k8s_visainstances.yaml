@@ -89,18 +89,13 @@ spec:
                 items:
                   properties:
                     lastTransitionTime:
-                      description: The last time this Condition type changed.
                       format: date-time
                       type: string
                     message:
-                      description: Full text reason for current status of the condition.
                       type: string
                     reason:
-                      description: One word, camel-case reason for current status
-                        of the condition.
                       type: string
                     status:
-                      description: True, False, or Unknown
                       type: string
                     type:
                       type: string

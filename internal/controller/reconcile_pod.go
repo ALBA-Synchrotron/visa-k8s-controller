@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 func (r *VISAInstanceReconciler) reconcilePod(
@@ -14,7 +15,7 @@ func (r *VISAInstanceReconciler) reconcilePod(
 	instance *cloudproviderv1.VISAInstance,
 	desired *corev1.Pod,
 ) error {
-
+	logger := logf.FromContext(ctx)
 	current := &corev1.Pod{}
 
 	err := r.Get(ctx, client.ObjectKey{
@@ -24,6 +25,7 @@ func (r *VISAInstanceReconciler) reconcilePod(
 
 	switch {
 	case apierrors.IsNotFound(err):
+		logger.Info("Creating backing pod of instance", "instance", instance.Name)
 		if err := r.Create(ctx, desired); err != nil {
 			r.Recorder.Eventf(
 				instance,
@@ -55,6 +57,7 @@ func (r *VISAInstanceReconciler) reconcilePod(
 
 	if currentHash != desiredHash {
 		if current.DeletionTimestamp.IsZero() {
+			logger.Info("Reprovisioning (reboot) backing pod of instance", "instance", instance.Name)
 			r.Recorder.Eventf(
 				instance,
 				corev1.EventTypeNormal,

@@ -8,6 +8,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const deletionFinalizer = "cloudprovider.visa.k8s/finalizer"
@@ -52,6 +53,10 @@ func (r *VISAInstanceReconciler) reconcileDelete(ctx context.Context, instance *
 func (r *VISAInstanceReconciler) deleteResources(ctx context.Context, instance *cloudproviderv1.VISAInstance) (bool, error) {
 
 	pod, err := r.getPod(ctx, instance)
+
+	logger := logf.FromContext(ctx)
+	logger.Info("Deleting backing pod", "instance", instance.Name)
+
 	switch {
 	case k8serrors.IsNotFound(err):
 		return true, nil

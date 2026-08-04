@@ -64,7 +64,7 @@ func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if v, ok := visaInstance.Labels[pauseReconciliationLabel]; ok && v == "true" {
-		logger.Info("Not reconciling VISAInstance")
+		logger.Info("Not reconciling VISAInstance, reconciliation paused")
 		r.Recorder.Event(visaInstance, corev1.EventTypeWarning,
 			"PausedReconciliation", fmt.Sprintf("label '%s' is set to true", pauseReconciliationLabel))
 

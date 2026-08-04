@@ -21,37 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type InstanceState string
-type DesiredInstanceState string
-
-const (
-	StateActive          InstanceState = "ACTIVE"
-	StatePartiallyActive InstanceState = "PARTIALLY_ACTIVE"
-	StateBuilding        InstanceState = "BUILDING"
-	StateDeleted         InstanceState = "DELETED"
-	StateDeleting        InstanceState = "DELETING"
-	StateError           InstanceState = "ERROR"
-	StateStarting        InstanceState = "STARTING"
-	StateStopped         InstanceState = "STOPPED"
-	StateStopping        InstanceState = "STOPPING"
-	StateRebooting       InstanceState = "REBOOTING"
-	StateUnavailable     InstanceState = "UNAVAILABLE"
-	StateUnknown         InstanceState = "UNKNOWN"
-)
-
-const (
-	DesiredStateActive          DesiredInstanceState = "ACTIVE"
-	DesiredStatePartiallyActive DesiredInstanceState = "PARTIALLY_ACTIVE"
-	DesiredStateDeleted         DesiredInstanceState = "DELETED"
-	DesiredStateStopped         DesiredInstanceState = "STOPPED"
-)
-
-type LocalObjectReference struct {
-	// +required
-	// +kubebuilder:validation:MinLength=1
-	Name string `json:"name"`
-}
-
 type VISAInstanceSpec struct {
 
 	// +required
@@ -61,26 +30,12 @@ type VISAInstanceSpec struct {
 	// +optional
 	SecurityGroups []LocalObjectReference `json:"securityGroups,omitempty"`
 	// +required
-	// +kubebuilder:validation:Enum:=ACTIVE;PARTIALLY_ACTIVE;DELETED;STOPPED
+	// +kubebuilder:validation:Enum:=ACTIVE;DELETED;STOPPED
 	DesiredState DesiredInstanceState `json:"desiredState"`
 	// +optional
 	RebootGeneration int64 `json:"rebootGeneration,omitempty"`
 	// +optional
 	AssociatedProposals []string `json:"associatedProposals,omitempty"`
-}
-type VISAInstanceStatus struct {
-
-	// +listType=map
-	// +listMapKey=type
-	// +optional
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
-	// +required
-	// +kubebuilder:validation:Enum:=ACTIVE;PARTIALLY_ACTIVE;BUILDING;DELETED;DELETING;ERROR;STARTING;STOPPED;STOPPING;REBOOTING;UNAVAILABLE;UNKNOWN
-	State InstanceState `json:"state"`
-	// +optional
-	Address *string `json:"address,omitempty"`
-	// +optional
-	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
 }
 
 // +kubebuilder:object:root=true

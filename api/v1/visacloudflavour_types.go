@@ -22,19 +22,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type SidecarConfigRef struct {
-	// +kubebuilder:validation:MinLength=1
-	// +required
-	Name string `json:"name"`
-}
-
 type VISACloudFlavourSpec struct {
 	// +optional
 	// +listType=map
 	// +listMapKey=name
 	Sidecars []SidecarConfigRef `json:"sidecars,omitempty"`
 	// +optional
-	Resources *v1.ResourceRequirements `json:"resources,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // +kubebuilder:object:root=true

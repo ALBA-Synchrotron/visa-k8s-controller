@@ -4,4 +4,4 @@ metadata:
   labels:
     app.kubernetes.io/name: visa-k8s-controller
     app.kubernetes.io/managed-by: kustomize
-  name: visacloudsecuritygroup-sample
+  name: instance-sudoers

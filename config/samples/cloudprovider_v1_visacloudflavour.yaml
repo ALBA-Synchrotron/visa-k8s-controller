@@ -4,15 +4,14 @@ metadata:
   labels:
     app.kubernetes.io/name: visa-k8s-controller
     app.kubernetes.io/managed-by: kustomize
-  name: visacloudflavour-sample
+  name: all-aux-services
 spec:
   sidecars:
-    - name: sidecar1
-    - name: sidecar2
+    - name: sidecar-guacd
+    - name: sidecar-visafs
+    - name: sidecar-visa-print
+    - name: sidecar-jupyter
   resources:
     requests:
       cpu: 100m
       memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi

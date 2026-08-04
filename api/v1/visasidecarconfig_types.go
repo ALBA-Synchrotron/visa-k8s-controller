@@ -17,7 +17,6 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -25,20 +24,7 @@ import (
 type VISASidecarConfigSpec struct {
 
 	// +required
-	// +kubebuilder:validation:MinLength=1
-	FullImageReference string `json:"fullImageReference"`
-	// +optional
-	Resources v1.ResourceRequirements `json:"resources"`
-	// +optional
-	Command []string `json:"command,omitempty"`
-	// +optional
-	Args []string `json:"args,omitempty"`
-	// +optional
-	Ports []v1.ContainerPort `json:"ports,omitempty"`
-	// +required
-	DeploySidecar bool `json:"deploySidecar"`
-	// +optional
-	Env []v1.EnvVar `json:"env"`
+	ContainerSpec `json:"containerSpec"`
 }
 
 // +kubebuilder:object:root=true

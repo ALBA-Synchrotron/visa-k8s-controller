@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
+	"git.cells.es/mis/visa/visa-k8s-controller/internal/resource"
 	"git.cells.es/mis/visa/visa-k8s-controller/internal/status"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,7 +24,9 @@ func (r *VISAInstanceReconciler) syncStatusFromPod(
 		instance.Status.Address = nil
 	}
 
-	if instance.Spec.RebootGeneration > instance.Status.ObservedRebootGeneration &&
+	instanceSpecHash := resource.HashVISAInstanceSpec(instance.Spec)
+
+	if instanceSpecHash == pod.GetAnnotations()["cloudprovider.visa.k8s/spec-hash"] &&
 		pod.Status.Phase == corev1.PodRunning {
 		instance.Status.ObservedRebootGeneration = instance.Spec.RebootGeneration
 	}

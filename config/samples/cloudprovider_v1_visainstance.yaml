@@ -21,7 +21,7 @@ spec:
     name: "all-aux-services"
   securityGroups:
     - name: "instance-sudoers"
-  desiredState: "ACTIVE"
+  desiredState: "STOPPED"
   rebootGeneration: 0
   associatedProposals:
     - "2029251244"

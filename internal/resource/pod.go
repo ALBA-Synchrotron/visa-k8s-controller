@@ -1,8 +1,6 @@
 package resource
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"strconv"
 	"strings"
 
@@ -10,7 +8,6 @@ import (
 	"git.cells.es/mis/visa/visa-k8s-controller/internal/resolver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/json"
 )
 
 type PodBuilder struct{}
@@ -72,17 +69,7 @@ func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.Resolved
 		},
 	}
 
-	annotations["cloudprovider.visa.k8s/spec-hash"] = hashPodSpec(pod.Spec)
+	annotations["cloudprovider.visa.k8s/spec-hash"] = HashVISAInstanceSpec(visaInstance.Spec)
 
 	return pod
-}
-
-func hashPodSpec(spec corev1.PodSpec) string {
-	data, err := json.Marshal(spec)
-	if err != nil {
-		panic(err)
-	}
-
-	sum := sha256.Sum256(data)
-	return hex.EncodeToString(sum[:])
 }

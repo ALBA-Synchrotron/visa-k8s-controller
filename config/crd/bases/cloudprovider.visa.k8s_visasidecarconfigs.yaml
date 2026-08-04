@@ -207,6 +207,14 @@ spec:
                   fullImageReference:
                     minLength: 1
                     type: string
+                  imagePullPolicy:
+                    description: PullPolicy describes a policy for if/when to pull
+                      a container image
+                    enum:
+                    - Always
+                    - Never
+                    - IfNotPresent
+                    type: string
                   ports:
                     items:
                       description: ContainerPort represents a network port in a single

@@ -29,4 +29,6 @@ type VISAInstanceStatus struct {
 	Address *string `json:"address,omitempty"`
 	// +optional
 	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
+	// +optional
+	Error string `json:"error,omitempty"`
 }

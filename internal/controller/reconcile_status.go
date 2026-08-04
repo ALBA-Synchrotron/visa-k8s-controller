@@ -67,6 +67,7 @@ func (r *VISAInstanceReconciler) syncStatusFromPod(
 		instance.Status.State = cloudproviderv1.StateUnknown
 	}
 
+	instance.Status.Error = podErrorSummary(pod)
 	syncConditions(instance)
 
 	return r.Status().Patch(ctx, instance, patch)
@@ -213,4 +214,45 @@ func syncConditions(instance *cloudproviderv1.VISAInstance) {
 			"Unable to determine provisioning state",
 		)
 	}
+}
+
+func podErrorSummary(pod *corev1.Pod) string {
+	for _, condition := range pod.Status.Conditions {
+		if condition.Type == corev1.PodScheduled &&
+			condition.Status == corev1.ConditionFalse &&
+			condition.Message != "" {
+			return condition.Message
+		}
+	}
+	for _, cs := range pod.Status.ContainerStatuses {
+		if waiting := cs.State.Waiting; waiting != nil {
+			switch waiting.Reason {
+			case "", "ContainerCreating", "PodInitializing":
+				continue
+			}
+
+			if waiting.Message != "" {
+				return waiting.Reason + ": " + waiting.Message
+			}
+			return waiting.Reason
+		}
+
+		if terminated := cs.State.Terminated; terminated != nil {
+			if terminated.Message != "" {
+				return terminated.Reason + ": " + terminated.Message
+			}
+			return terminated.Reason
+		}
+	}
+
+	if pod.Status.Phase == corev1.PodFailed {
+		if pod.Status.Message != "" {
+			return pod.Status.Message
+		}
+		if pod.Status.Reason != "" {
+			return pod.Status.Reason
+		}
+		return "Pod failed"
+	}
+	return ""
 }

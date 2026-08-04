@@ -107,6 +107,8 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              error:
+                type: string
               observedRebootGeneration:
                 format: int64
                 type: integer

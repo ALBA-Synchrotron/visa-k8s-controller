@@ -36,7 +36,7 @@ type VISACloudImageSpec struct {
 	Size string `json:"size"`
 	// +optional
 	// +kubebuilder:validation:Enum:=ClusterFirstWithHostNet;ClusterFirst;Default
-	v1.DNSPolicy
+	v1.DNSPolicy `json:"dnsPolicy,omitempty"`
 }
 
 // +kubebuilder:object:root=true

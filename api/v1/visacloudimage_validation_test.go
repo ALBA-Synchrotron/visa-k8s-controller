@@ -14,10 +14,12 @@ var _ = ginkgo.Describe("VISACloudImage validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISACloudImageSpec{
-				FullImageReference: "registry.blah.cells/test-image:latest",
-				Size:               "2654.23",
-				HomeTemplatePath:   "/etc/home/template",
-				UserShell:          "/usr/bin/bash",
+				Size:             "2654.23",
+				HomeTemplatePath: "/etc/home/template",
+				UserShell:        "/usr/bin/bash",
+				ContainerSpec: ContainerSpec{
+					FullImageReference: "registry.blah.cells/test-image:latest",
+				},
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, device)).To(gomega.Succeed())

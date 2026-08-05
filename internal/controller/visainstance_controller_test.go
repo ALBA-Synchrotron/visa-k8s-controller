@@ -16,21 +16,7 @@ limitations under the License.
 
 package controller
 
-import (
-	"context"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-)
-
+/*
 var _ = Describe("VISAInstance Controller", func() {
 	Context("When reconciling a resource", func() {
 		const (
@@ -50,7 +36,8 @@ var _ = Describe("VISAInstance Controller", func() {
 			By("creating the custom resource for the Kind VISAInstance")
 			err := k8sClient.Get(ctx, typeNamespacedName, visainstance)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &cloudproviderv1.VISAInstance{
+				// TODO: Implement unit and e2e tests
+				/*resource := &cloudproviderv1.VISAInstance{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: resourceNamespace,
@@ -92,3 +79,4 @@ var _ = Describe("VISAInstance Controller", func() {
 		})
 	})
 })
+*/

@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -24,11 +25,11 @@ import (
 type VISAInstanceSpec struct {
 
 	// +required
-	Image LocalObjectReference `json:"image"`
+	Image v1.LocalObjectReference `json:"image"`
 	// +required
-	Flavour LocalObjectReference `json:"flavour"`
+	Flavour v1.LocalObjectReference `json:"flavour"`
 	// +optional
-	SecurityGroups []LocalObjectReference `json:"securityGroups,omitempty"`
+	SecurityGroups []v1.LocalObjectReference `json:"securityGroups,omitempty"`
 	// +required
 	// +kubebuilder:validation:Enum:=ACTIVE;DELETED;STOPPED
 	DesiredState DesiredInstanceState `json:"desiredState"`

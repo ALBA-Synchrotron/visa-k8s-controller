@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,10 +15,10 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISAInstanceSpec{
-				Image: LocalObjectReference{
+				Image: corev1.LocalObjectReference{
 					Name: "test-image",
 				},
-				Flavour: LocalObjectReference{
+				Flavour: corev1.LocalObjectReference{
 					Name: "test-flavour",
 				},
 				DesiredState: DesiredStateActive,
@@ -33,10 +34,10 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISAInstanceSpec{
-				Image: LocalObjectReference{
+				Image: corev1.LocalObjectReference{
 					Name: "",
 				},
-				Flavour: LocalObjectReference{
+				Flavour: corev1.LocalObjectReference{
 					Name: "test-flavour",
 				},
 				DesiredState: DesiredStateActive,
@@ -53,10 +54,10 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISAInstanceSpec{
-				Image: LocalObjectReference{
+				Image: corev1.LocalObjectReference{
 					Name: "",
 				},
-				Flavour: LocalObjectReference{
+				Flavour: corev1.LocalObjectReference{
 					Name: "test-flavour",
 				},
 				DesiredState: "STARTING",

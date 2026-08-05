@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -67,7 +68,7 @@ func (c *ConfigResolver) getSidecarConfigs(ctx context.Context, namespace string
 	return sidecarConfigs, nil
 }
 
-func (c *ConfigResolver) getSecurityGroups(ctx context.Context, namespace string, groups []cloudproviderv1.LocalObjectReference) ([]*cloudproviderv1.VISACloudSecurityGroup, error) {
+func (c *ConfigResolver) getSecurityGroups(ctx context.Context, namespace string, groups []corev1.LocalObjectReference) ([]*cloudproviderv1.VISACloudSecurityGroup, error) {
 	securityGroups := make(
 		[]*cloudproviderv1.VISACloudSecurityGroup,
 		0,

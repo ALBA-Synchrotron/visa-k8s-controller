@@ -8,12 +8,6 @@ type SidecarConfigRef struct {
 	Name string `json:"name"`
 }
 
-type LocalObjectReference struct {
-	// +required
-	// +kubebuilder:validation:MinLength=1
-	Name string `json:"name"`
-}
-
 type ContainerSpec struct {
 	// +required
 	// +kubebuilder:validation:MinLength=1

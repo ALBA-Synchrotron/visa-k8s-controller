@@ -21,6 +21,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -55,10 +56,10 @@ var _ = Describe("VISAInstance Controller", func() {
 						Namespace: resourceNamespace,
 					},
 					Spec: cloudproviderv1.VISAInstanceSpec{
-						Image: cloudproviderv1.LocalObjectReference{
+						Image: corev1.LocalObjectReference{
 							Name: "sample-image",
 						},
-						Flavour: cloudproviderv1.LocalObjectReference{
+						Flavour: corev1.LocalObjectReference{
 							Name: "sample-flavour",
 						},
 						DesiredState: "ACTIVE",

@@ -14,8 +14,9 @@ var _ = ginkgo.Describe("VISASidecarConfig validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISASidecarConfigSpec{
-				FullImageReference: "guacd:latest",
-				DeploySidecar:      true,
+				ContainerSpec: ContainerSpec{
+					FullImageReference: "guacd:latest",
+				},
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, device)).To(gomega.Succeed())
@@ -28,8 +29,9 @@ var _ = ginkgo.Describe("VISASidecarConfig validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISASidecarConfigSpec{
-				FullImageReference: "",
-				DeploySidecar:      true,
+				ContainerSpec: ContainerSpec{
+					FullImageReference: "aguacate:latest",
+				},
 			},
 		}
 		err := k8sClient.Create(ctx, device)

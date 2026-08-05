@@ -49,7 +49,7 @@ func (c *ConfigResolver) getFlavour(ctx context.Context, namespace string, name 
 	return flavour, nil
 }
 
-func (c *ConfigResolver) getSidecarConfigs(ctx context.Context, namespace string, sidecars []cloudproviderv1.SidecarConfigRef) ([]*cloudproviderv1.VISASidecarConfig, error) {
+func (c *ConfigResolver) getSidecarConfigs(ctx context.Context, namespace string, sidecars []corev1.LocalObjectReference) ([]*cloudproviderv1.VISASidecarConfig, error) {
 
 	sidecarConfigs := make(
 		[]*cloudproviderv1.VISASidecarConfig,

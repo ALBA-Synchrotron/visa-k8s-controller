@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,7 +15,7 @@ var _ = ginkgo.Describe("VISACloudFlavour validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISACloudFlavourSpec{
-				Sidecars: []SidecarConfigRef{
+				Sidecars: []corev1.LocalObjectReference{
 					{Name: "guacd"}, {Name: "visa-print"},
 				},
 			},
@@ -29,7 +30,7 @@ var _ = ginkgo.Describe("VISACloudFlavour validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISACloudFlavourSpec{
-				Sidecars: []SidecarConfigRef{
+				Sidecars: []corev1.LocalObjectReference{
 					{Name: "guacd"}, {Name: "visa-print"}, {Name: "guacd"},
 				},
 			},
@@ -45,7 +46,7 @@ var _ = ginkgo.Describe("VISACloudFlavour validation", func() {
 				Namespace: "default",
 			},
 			Spec: VISACloudFlavourSpec{
-				Sidecars: []SidecarConfigRef{
+				Sidecars: []corev1.LocalObjectReference{
 					{Name: "guacd"}, {Name: "visa-print"}, {Name: ""},
 				},
 			},

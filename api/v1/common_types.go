@@ -2,12 +2,6 @@ package v1
 
 import corev1 "k8s.io/api/core/v1"
 
-type SidecarConfigRef struct {
-	// +kubebuilder:validation:MinLength=1
-	// +required
-	Name string `json:"name"`
-}
-
 type ContainerSpec struct {
 	// +required
 	// +kubebuilder:validation:MinLength=1

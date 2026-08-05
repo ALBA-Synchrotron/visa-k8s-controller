@@ -26,7 +26,7 @@ type VISACloudFlavourSpec struct {
 	// +optional
 	// +listType=map
 	// +listMapKey=name
-	Sidecars []SidecarConfigRef `json:"sidecars,omitempty"`
+	Sidecars []v1.LocalObjectReference `json:"sidecars,omitempty"`
 	// +optional
 	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }

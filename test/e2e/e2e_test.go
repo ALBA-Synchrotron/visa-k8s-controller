@@ -270,15 +270,99 @@ var _ = Describe("Manager", Ordered, func() {
 
 		// +kubebuilder:scaffold:e2e-webhooks-checks
 
-		// TODO: Customize the e2e test suite with scenarios specific to your project.
-		// Consider applying sample/CR(s) and check their status and/or verifying
-		// the reconciliation by using the metrics, i.e.:
-		// metricsOutput, err := getMetricsOutput()
-		// Expect(err).NotTo(HaveOccurred(), "Failed to retrieve logs from curl pod")
-		// Expect(metricsOutput).To(ContainSubstring(
-		//    fmt.Sprintf(`controller_runtime_reconcile_total{controller="%s",result="success"} 1`,
-		//    strings.ToLower(<Kind>),
-		// ))
+		It("should successfully reconcile, reboot, stop, and restart a VISAInstance", func() {
+			const instanceName = "visainstance-sample"
+			const instanceNamespace = "default"
+
+			By("applying the samples for VISAInstance and dependencies")
+			cmd := exec.Command("kubectl", "apply", "-k", "config/samples/", "-n", instanceNamespace)
+			_, err := utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to apply samples")
+
+			DeferCleanup(func() {
+				By("cleaning up the sample resources")
+				cmd := exec.Command("kubectl", "delete", "-k", "config/samples/", "-n", instanceNamespace, "--ignore-not-found")
+				_, _ = utils.Run(cmd)
+			})
+
+			By("setting the VISAInstance to ACTIVE")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance to ACTIVE")
+
+			By("verifying the backing runtime pod is created")
+			verifyPodCreated := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "pod", instanceName+"-runtime",
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.metadata.name}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal(instanceName + "-runtime"))
+			}
+			Eventually(verifyPodCreated, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("verifying the VISAInstance status has provisioned condition")
+			verifyInstanceProvisioned := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.status.conditions[?(@.type=='Provisioned')].status}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("True"))
+			}
+			Eventually(verifyInstanceProvisioned, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("rebooting the instance by incrementing rebootGeneration")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"rebootGeneration":1}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to increment rebootGeneration")
+
+			By("verifying the instance is stopping when desiredState is STOPPED")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"STOPPED"}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance to STOPPED")
+
+			By("verifying the backing runtime pod is deleted")
+			verifyPodDeleted := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "pod", instanceName+"-runtime",
+					"-n", instanceNamespace)
+				output, err := utils.Run(cmd)
+				g.Expect(err).To(HaveOccurred())
+				g.Expect(output).To(ContainSubstring("NotFound"))
+			}
+			Eventually(verifyPodDeleted, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("verifying the instance status is STOPPED")
+			verifyInstanceStopped := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.status.state}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("STOPPED"))
+			}
+			Eventually(verifyInstanceStopped, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("restarting the instance by setting desiredState back to ACTIVE")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance back to ACTIVE")
+
+			By("verifying a new backing runtime pod is created upon restart")
+			Eventually(verifyPodCreated, 2*time.Minute, time.Second).Should(Succeed())
+		})
 	})
 })
 

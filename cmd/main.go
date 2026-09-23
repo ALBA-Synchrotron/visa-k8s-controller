@@ -104,13 +104,6 @@ func main() {
 	if !enableHTTP2 {
 		tlsOpts = append(tlsOpts, disableHTTP2)
 	}
-
-	operatorNamespace := os.Getenv("OPERATOR_NAMESPACE")
-	if operatorNamespace == "" {
-		setupLog.Info("unable to find operator namespace")
-		os.Exit(1)
-	}
-
 	// If the environment variable is not set Getenv returns an empty string which ctrl.Options.Namespace takes to mean all namespaces should be watched
 	operatorScopeNamespace := os.Getenv("OPERATOR_SCOPE_NAMESPACE")
 

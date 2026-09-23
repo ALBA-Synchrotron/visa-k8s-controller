@@ -7,7 +7,7 @@ metadata:
   name: sidecar-guacd
 spec:
   containerSpec:
-    fullImageReference: "registry.cells.es/docker/guacamole/guacd:1.5.5"
+    fullImageReference: "docker.io/guacamole/guacd:1.5.5"
     resources:
       requests:
         cpu: 100m
@@ -17,91 +17,3 @@ spec:
         protocol: TCP
         hostIP: 0.0.0.0
         hostPort: 4822
----
-apiVersion: cloudprovider.visa.k8s/v1
-kind: VISASidecarConfig
-metadata:
-  labels:
-    app.kubernetes.io/name: visa-k8s-controller
-    app.kubernetes.io/managed-by: kustomize
-  name: sidecar-visafs
-spec:
-  containerSpec:
-    fullImageReference: "registry.cells.es/visa-images/auxiliary-services/node-fs-api:latest"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-    ports:
-      - containerPort: 8090
-        protocol: TCP
-        hostIP: 0.0.0.0
-        hostPort: 8090
-    env:
-      - name: HOME
-        value: "/scratch/data-analysis"
-      - name: NODE_FS_API_SERVER_HOST
-        value: "0.0.0.0"
-      - name: NODE_FS_API_MAX_FILE_UPLOAD_SIZE
-        value: "0mb"
----
-apiVersion: cloudprovider.visa.k8s/v1
-kind: VISASidecarConfig
-metadata:
-  labels:
-    app.kubernetes.io/name: visa-k8s-controller
-    app.kubernetes.io/managed-by: kustomize
-  name: sidecar-visa-print
-spec:
-  containerSpec:
-    fullImageReference: "registry.cells.es/visa-images/auxiliary-services/visa-print-service:latest"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-    ports:
-      - containerPort: 8091
-        protocol: TCP
-        hostIP: 0.0.0.0
-        hostPort: 8091
-    env:
-      - name: VISA_PRINT_SERVER_HOST
-        value: "0.0.0.0"
----
-apiVersion: cloudprovider.visa.k8s/v1
-kind: VISASidecarConfig
-metadata:
-  labels:
-    app.kubernetes.io/name: visa-k8s-controller
-    app.kubernetes.io/managed-by: kustomize
-  name: sidecar-jupyter
-spec:
-  containerSpec:
-    fullImageReference: "quay.io/jupyter/scipy-notebook:latest"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-    ports:
-      - containerPort: 8888
-        protocol: TCP
-        hostIP: 0.0.0.0
-        hostPort: 8888
-    command:
-      - "sh"
-      - "-c"
-    args:
-      - |
-        mkdir -p "${HOME}/.visa-jupyter/" && \
-        echo "c.ServerApp.tornado_settings = {'xsrf_cookie_kwargs': {'path': '/'}}" > "${HOME}/.visa-jupyter/jupyter_cookie_override.py" && \
-        jupyter lab \
-          --config="${HOME}/.visa-jupyter/jupyter_cookie_override.py" \
-          --ip=0.0.0.0 \
-          --port=8888 \
-          --no-browser \
-          --ServerApp.token='' \
-          --ServerApp.password='' \
-          --ServerApp.allow_origin='*' \
-          --ServerApp.trust_xheaders=True \
-          --NotebookApp.base_url="/jupyter/${VISA_INSTANCE_ID}"

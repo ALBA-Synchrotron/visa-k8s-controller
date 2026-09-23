@@ -42,6 +42,14 @@ const (
 	pauseReconciliationLabel = "cloudprovider.visa.k8s/pauseReconciliation"
 )
 
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudimages,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudflavours,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visasidecarconfigs,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudsecuritygroups,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visaclouddevices,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances/finalizers,verbs=update

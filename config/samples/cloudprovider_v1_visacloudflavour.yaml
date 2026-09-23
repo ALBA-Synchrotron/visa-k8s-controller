@@ -8,9 +8,6 @@ metadata:
 spec:
   sidecars:
     - name: sidecar-guacd
-    - name: sidecar-visafs
-    - name: sidecar-visa-print
-    - name: sidecar-jupyter
   resources:
     requests:
       cpu: 100m

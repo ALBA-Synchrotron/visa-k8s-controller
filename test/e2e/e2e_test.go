@@ -43,7 +43,7 @@ const serviceAccountName = "visa-k8s-controller-controller-manager"
 const metricsServiceName = "visa-k8s-controller-controller-manager-metrics-service"
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
-const metricsRoleBindingName = "visa-k8s-controller-metrics-binding"
+const metricsRoleBindingName = "visa-k8s-controller-metrics-reader-binding"
 
 var _ = Describe("Manager", Ordered, func() {
 	var controllerPodName string
@@ -52,8 +52,35 @@ var _ = Describe("Manager", Ordered, func() {
 	// enforce the restricted security policy to the namespace, installing CRDs,
 	// and deploying the controller.
 	BeforeAll(func() {
+		crds := []string{
+			"visainstances.cloudprovider.visa.k8s",
+			"visacloudflavours.cloudprovider.visa.k8s",
+			"visacloudimages.cloudprovider.visa.k8s",
+			"visasidecarconfigs.cloudprovider.visa.k8s",
+			"visacloudsecuritygroups.cloudprovider.visa.k8s",
+			"visaclouddevices.cloudprovider.visa.k8s",
+		}
+
+		By("cleaning up previous test state and removing finalizers")
+		cmd := exec.Command("kubectl", "delete", "clusterrolebinding", metricsRoleBindingName, "--ignore-not-found")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "patch", "visainstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "delete", "pod", "visainstance-sample-runtime", "-n", "default", "--ignore-not-found", "--force", "--grace-period=0")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "delete", "-k", "config/samples/", "-n", "default", "--ignore-not-found", "--timeout=10s")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "delete", "ns", namespace, "--ignore-not-found", "--timeout=30s")
+		_, _ = utils.Run(cmd)
+
+		By("waiting for any terminating CRDs to be fully removed")
+		for _, crd := range crds {
+			cmd = exec.Command("kubectl", "wait", "--for=delete", "crd/"+crd, "--timeout=15s")
+			_, _ = utils.Run(cmd)
+		}
+
 		By("creating manager namespace")
-		cmd := exec.Command("kubectl", "create", "ns", namespace)
+		cmd = exec.Command("kubectl", "create", "ns", namespace)
 		_, err := utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to create namespace")
 
@@ -68,6 +95,13 @@ var _ = Describe("Manager", Ordered, func() {
 		_, err = utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to install CRDs")
 
+		By("verifying CRDs are installed and established")
+		for _, crd := range crds {
+			cmd = exec.Command("kubectl", "wait", "--for=condition=Established", "--timeout=60s", "crd/"+crd)
+			output, err := utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("CRD %s was not established: %s", crd, output))
+		}
+
 		By("deploying the controller-manager")
 		cmd = exec.Command("make", "deploy", fmt.Sprintf("IMG=%s", managerImage))
 		_, err = utils.Run(cmd)
@@ -78,19 +112,31 @@ var _ = Describe("Manager", Ordered, func() {
 	// and deleting the namespace.
 	AfterAll(func() {
 		By("cleaning up the curl pod for metrics")
-		cmd := exec.Command("kubectl", "delete", "pod", "curl-metrics", "-n", namespace)
+		cmd := exec.Command("kubectl", "delete", "pod", "curl-metrics", "-n", namespace, "--ignore-not-found", "--force", "--grace-period=0")
+		_, _ = utils.Run(cmd)
+
+		By("cleaning up the metrics ClusterRoleBinding")
+		cmd = exec.Command("kubectl", "delete", "clusterrolebinding", metricsRoleBindingName, "--ignore-not-found")
+		_, _ = utils.Run(cmd)
+
+		By("cleaning up any sample resources and removing finalizers")
+		cmd = exec.Command("kubectl", "patch", "visainstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "delete", "pod", "visainstance-sample-runtime", "-n", "default", "--ignore-not-found", "--force", "--grace-period=0")
+		_, _ = utils.Run(cmd)
+		cmd = exec.Command("kubectl", "delete", "-k", "config/samples/", "-n", "default", "--ignore-not-found", "--timeout=30s")
 		_, _ = utils.Run(cmd)
 
 		By("undeploying the controller-manager")
-		cmd = exec.Command("make", "undeploy")
+		cmd = exec.Command("make", "undeploy", "ignore-not-found=true")
 		_, _ = utils.Run(cmd)
 
 		By("uninstalling CRDs")
-		cmd = exec.Command("make", "uninstall")
+		cmd = exec.Command("make", "uninstall", "ignore-not-found=true")
 		_, _ = utils.Run(cmd)
 
 		By("removing manager namespace")
-		cmd = exec.Command("kubectl", "delete", "ns", namespace)
+		cmd = exec.Command("kubectl", "delete", "ns", namespace, "--ignore-not-found")
 		_, _ = utils.Run(cmd)
 	})
 
@@ -270,15 +316,108 @@ var _ = Describe("Manager", Ordered, func() {
 
 		// +kubebuilder:scaffold:e2e-webhooks-checks
 
-		// TODO: Customize the e2e test suite with scenarios specific to your project.
-		// Consider applying sample/CR(s) and check their status and/or verifying
-		// the reconciliation by using the metrics, i.e.:
-		// metricsOutput, err := getMetricsOutput()
-		// Expect(err).NotTo(HaveOccurred(), "Failed to retrieve logs from curl pod")
-		// Expect(metricsOutput).To(ContainSubstring(
-		//    fmt.Sprintf(`controller_runtime_reconcile_total{controller="%s",result="success"} 1`,
-		//    strings.ToLower(<Kind>),
-		// ))
+		It("should successfully reconcile, reboot, stop, and restart a VISAInstance", func() {
+			const instanceName = "visainstance-sample"
+			const instanceNamespace = "default"
+
+			By("applying the samples for VISAInstance and dependencies")
+			applySamples := func(g Gomega) {
+				cmd := exec.Command("kubectl", "apply", "-k", "config/samples/", "-n", instanceNamespace)
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to apply samples: %s", output))
+			}
+			Eventually(applySamples, 2*time.Minute, time.Second).Should(Succeed())
+
+			DeferCleanup(func() {
+				By("cleaning up the sample resources")
+				cmd := exec.Command("kubectl", "patch", "visainstance", instanceName, "-n", instanceNamespace, "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+				_, _ = utils.Run(cmd)
+
+				cmd = exec.Command("kubectl", "delete", "pod", instanceName+"-runtime", "-n", instanceNamespace, "--ignore-not-found", "--force", "--grace-period=0")
+				_, _ = utils.Run(cmd)
+
+				cmd = exec.Command("kubectl", "delete", "-k", "config/samples/", "-n", instanceNamespace, "--ignore-not-found", "--timeout=30s")
+				_, _ = utils.Run(cmd)
+			})
+
+			By("setting the VISAInstance to ACTIVE")
+			cmd := exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)
+			_, err := utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance to ACTIVE")
+
+			By("verifying the backing runtime pod is created")
+			verifyPodCreated := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "pod", instanceName+"-runtime",
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.metadata.name}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal(instanceName + "-runtime"))
+			}
+			Eventually(verifyPodCreated, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("verifying the VISAInstance status has provisioned condition")
+			verifyInstanceProvisioned := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.status.conditions[?(@.type=='Provisioned')].status}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("True"))
+			}
+			Eventually(verifyInstanceProvisioned, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("rebooting the instance by incrementing rebootGeneration")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"rebootGeneration":1}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to increment rebootGeneration")
+
+			By("verifying the instance is stopping when desiredState is STOPPED")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"STOPPED"}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance to STOPPED")
+
+			By("verifying the backing runtime pod is deleted")
+			verifyPodDeleted := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "pod", instanceName+"-runtime",
+					"-n", instanceNamespace)
+				output, err := utils.Run(cmd)
+				g.Expect(err).To(HaveOccurred())
+				g.Expect(output).To(ContainSubstring("NotFound"))
+			}
+			Eventually(verifyPodDeleted, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("verifying the instance status is STOPPED")
+			verifyInstanceStopped := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+					"-n", instanceNamespace,
+					"-o", "jsonpath={.status.state}")
+				output, err := utils.Run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("STOPPED"))
+			}
+			Eventually(verifyInstanceStopped, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("restarting the instance by setting desiredState back to ACTIVE")
+			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+				"-n", instanceNamespace,
+				"--type=merge",
+				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to patch instance back to ACTIVE")
+
+			By("verifying a new backing runtime pod is created upon restart")
+			Eventually(verifyPodCreated, 2*time.Minute, time.Second).Should(Succeed())
+		})
 	})
 })
 

@@ -40,4 +40,3 @@ resources:
 - visainstance_admin_role.yaml
 - visainstance_editor_role.yaml
 - visainstance_viewer_role.yaml
-

@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"maps"
 	"strconv"
 	"strings"
 
@@ -27,9 +28,7 @@ func buildContainer(name string, spec *v1.ContainerSpec) corev1.Container {
 
 func copyMap(src map[string]string) map[string]string {
 	dst := make(map[string]string, len(src))
-	for k, v := range src {
-		dst[k] = v
-	}
+	maps.Copy(dst, src)
 	return dst
 }
 

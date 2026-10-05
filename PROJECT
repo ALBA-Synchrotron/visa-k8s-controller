@@ -7,7 +7,7 @@ domain: visa.k8s
 layout:
 - go.kubebuilder.io/v4
 projectName: visa-k8s-controller
-repo: git.cells.es/mis/visa/visa-k8s-controller
+repo: github.com/ALBA-Synchrotron/visa-k8s-controller
 resources:
 - api:
     crdVersion: v1
@@ -16,7 +16,7 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISAInstance
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -24,7 +24,7 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISACloudFlavour
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -32,7 +32,7 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISACloudImage
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -40,7 +40,7 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISASidecarConfig
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -48,7 +48,7 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISALocalSecurityGroup
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -56,6 +56,6 @@ resources:
   domain: visa.k8s
   group: cloudprovider
   kind: VISACloudDevice
-  path: git.cells.es/mis/visa/visa-k8s-controller/api/v1
+  path: github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1
   version: v1
 version: "3"

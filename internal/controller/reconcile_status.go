@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 
-	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/resource"
+	cloudproviderv1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
+	"github.com/ALBA-Synchrotron/visa-k8s-controller/internal/resource"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

@@ -30,7 +30,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"git.cells.es/mis/visa/visa-k8s-controller/test/utils"
+	"github.com/ALBA-Synchrotron/visa-k8s-controller/test/utils"
 )
 
 // namespace where the project is deployed in

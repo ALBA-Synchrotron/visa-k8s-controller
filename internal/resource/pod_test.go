@@ -19,8 +19,8 @@ package resource
 import (
 	"testing"
 
-	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/resolver"
+	cloudproviderv1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
+	"github.com/ALBA-Synchrotron/visa-k8s-controller/internal/resolver"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -127,13 +127,13 @@ func TestPodBuilder(t *testing.T) {
 	g.Expect(pod).NotTo(BeNil())
 	g.Expect(pod.Name).To(Equal("test-instance-runtime"))
 	g.Expect(pod.Namespace).To(Equal(testNs))
-	g.Expect(pod.Labels).To(HaveKeyWithValue("visa.k8s.cells.es/managed", "true"))
+	g.Expect(pod.Labels).To(HaveKeyWithValue("cloudprovider.visa.k8s/managed", "true"))
 	g.Expect(pod.Labels).To(HaveKeyWithValue("custom.label", "value1"))
 	g.Expect(pod.Annotations).To(HaveKeyWithValue("custom.annotation", "value2"))
-	g.Expect(pod.Annotations).To(HaveKeyWithValue("visa.k8s.cells.es/security-groups", "sg-1,sg-2"))
-	g.Expect(pod.Annotations).To(HaveKeyWithValue("visa.k8s.cells.es/home-template-path", "/home/template"))
-	g.Expect(pod.Annotations).To(HaveKeyWithValue("visa.k8s.cells.es/user-shell", "/bin/zsh"))
-	g.Expect(pod.Annotations).To(HaveKeyWithValue("visa.k8s.cells.es/reboot-generation", "2"))
+	g.Expect(pod.Annotations).To(HaveKeyWithValue("cloudprovider.visa.k8s/security-groups", "sg-1,sg-2"))
+	g.Expect(pod.Annotations).To(HaveKeyWithValue("cloudprovider.visa.k8s/home-template-path", "/home/template"))
+	g.Expect(pod.Annotations).To(HaveKeyWithValue("cloudprovider.visa.k8s/user-shell", "/bin/zsh"))
+	g.Expect(pod.Annotations).To(HaveKeyWithValue("cloudprovider.visa.k8s/reboot-generation", "2"))
 	g.Expect(pod.Annotations).To(HaveKey("cloudprovider.visa.k8s/spec-hash"))
 	g.Expect(pod.Spec.DNSPolicy).To(Equal(corev1.DNSClusterFirst))
 	g.Expect(pod.Spec.ImagePullSecrets).To(Equal(imagePullSecrets))

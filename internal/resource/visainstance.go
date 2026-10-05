@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	v1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
+	v1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
 	"k8s.io/apimachinery/pkg/util/json"
 )
 

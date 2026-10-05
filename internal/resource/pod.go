@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	v1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/resolver"
+	v1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
+	"github.com/ALBA-Synchrotron/visa-k8s-controller/internal/resolver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -37,7 +37,7 @@ func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.Resolved
 	containers := make([]corev1.Container, 0, len(config.Sidecars)+1)
 
 	labels := copyMap(visaInstance.Labels)
-	labels["visa.k8s.cells.es/managed"] = "true"
+	labels["cloudprovider.visa.k8s/managed"] = "true"
 
 	securityGroupsNames := make([]string, 0, len(visaInstance.Spec.SecurityGroups))
 
@@ -46,10 +46,10 @@ func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.Resolved
 	}
 
 	annotations := copyMap(visaInstance.Annotations)
-	annotations["visa.k8s.cells.es/security-groups"] = strings.Join(securityGroupsNames, ",")
-	annotations["visa.k8s.cells.es/home-template-path"] = config.Image.Spec.HomeTemplatePath
-	annotations["visa.k8s.cells.es/user-shell"] = config.Image.Spec.UserShell
-	annotations["visa.k8s.cells.es/reboot-generation"] = strconv.FormatInt(visaInstance.Status.ObservedRebootGeneration, 10)
+	annotations["cloudprovider.visa.k8s/security-groups"] = strings.Join(securityGroupsNames, ",")
+	annotations["cloudprovider.visa.k8s/home-template-path"] = config.Image.Spec.HomeTemplatePath
+	annotations["cloudprovider.visa.k8s/user-shell"] = config.Image.Spec.UserShell
+	annotations["cloudprovider.visa.k8s/reboot-generation"] = strconv.FormatInt(visaInstance.Status.ObservedRebootGeneration, 10)
 
 	containers = append(containers, buildContainer("primary", &config.Image.Spec.ContainerSpec))
 

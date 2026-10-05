@@ -1,4 +1,4 @@
-module git.cells.es/mis/visa/visa-k8s-controller
+module github.com/ALBA-Synchrotron/visa-k8s-controller
 
 go 1.26.0
 

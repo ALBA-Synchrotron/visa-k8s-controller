@@ -38,8 +38,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
-	"git.cells.es/mis/visa/visa-k8s-controller/internal/controller"
+	cloudproviderv1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
+	"github.com/ALBA-Synchrotron/visa-k8s-controller/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 

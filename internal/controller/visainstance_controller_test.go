@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	cloudproviderv1 "git.cells.es/mis/visa/visa-k8s-controller/api/v1"
+	cloudproviderv1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -174,10 +174,10 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 				Name:      resourceName + "-runtime",
 			}
 			gomega.Expect(k8sClient.Get(ctx, podKey, createdPod)).To(gomega.Succeed())
-			gomega.Expect(createdPod.Labels).To(gomega.HaveKeyWithValue("visa.k8s.cells.es/managed", "true"))
-			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("visa.k8s.cells.es/home-template-path", "/etc/home/template"))
-			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("visa.k8s.cells.es/user-shell", "/usr/bin/bash"))
-			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("visa.k8s.cells.es/security-groups", "test-sg"))
+			gomega.Expect(createdPod.Labels).To(gomega.HaveKeyWithValue("cloudprovider.visa.k8s/managed", "true"))
+			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("cloudprovider.visa.k8s/home-template-path", "/etc/home/template"))
+			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("cloudprovider.visa.k8s/user-shell", "/usr/bin/bash"))
+			gomega.Expect(createdPod.Annotations).To(gomega.HaveKeyWithValue("cloudprovider.visa.k8s/security-groups", "test-sg"))
 			gomega.Expect(createdPod.Spec.Containers).To(gomega.HaveLen(2))
 			gomega.Expect(createdPod.Spec.Containers[0].Name).To(gomega.Equal("primary"))
 			gomega.Expect(createdPod.Spec.Containers[0].Image).To(gomega.Equal("docker.io/busybox:1.37"))

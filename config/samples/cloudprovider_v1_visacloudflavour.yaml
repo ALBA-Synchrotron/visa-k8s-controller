@@ -1,0 +1,14 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISACloudFlavour
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: all-aux-services
+spec:
+  sidecars:
+    - name: sidecar-guacd
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi

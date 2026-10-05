@@ -1,0 +1,19 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISASidecarConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: sidecar-guacd
+spec:
+  containerSpec:
+    fullImageReference: "docker.io/guacamole/guacd:1.5.5"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    ports:
+      - containerPort: 4822
+        protocol: TCP
+        hostIP: 0.0.0.0
+        hostPort: 4822

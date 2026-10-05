@@ -1,0 +1,7 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISACloudSecurityGroup
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: instance-sudoers

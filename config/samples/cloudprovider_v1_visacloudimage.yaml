@@ -1,0 +1,13 @@
+apiVersion: cloudprovider.visa.k8s/v1
+kind: VISACloudImage
+metadata:
+  labels:
+    app.kubernetes.io/name: visa-k8s-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: debian12-test-image
+spec:
+  containerSpec:
+    fullImageReference: "registry.cells.es/visa-images/its-alba-test:latest"
+  size: "7211.0"
+  homeTemplatePath: "/etc/visa_home_template/"
+  userShell: "/usr/bin/bash"

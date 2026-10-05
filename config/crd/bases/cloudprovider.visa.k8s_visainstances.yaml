@@ -1,0 +1,163 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.21.0
+  name: visainstances.cloudprovider.visa.k8s
+spec:
+  group: cloudprovider.visa.k8s
+  names:
+    kind: VISAInstance
+    listKind: VISAInstanceList
+    plural: visainstances
+    singular: visainstance
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              associatedProposals:
+                items:
+                  type: string
+                type: array
+              desiredState:
+                enum:
+                - ACTIVE
+                - DELETED
+                - STOPPED
+                type: string
+              flavour:
+                description: |-
+                  LocalObjectReference contains enough information to let you locate the
+                  referenced object inside the same namespace.
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              image:
+                description: |-
+                  LocalObjectReference contains enough information to let you locate the
+                  referenced object inside the same namespace.
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              rebootGeneration:
+                format: int64
+                type: integer
+              securityGroups:
+                items:
+                  description: |-
+                    LocalObjectReference contains enough information to let you locate the
+                    referenced object inside the same namespace.
+                  properties:
+                    name:
+                      default: ""
+                      description: |-
+                        Name of the referent.
+                        This field is effectively required, but due to backwards compatibility is
+                        allowed to be empty. Instances of this type with an empty value here are
+                        almost certainly wrong.
+                        More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      type: string
+                  type: object
+                  x-kubernetes-map-type: atomic
+                type: array
+            required:
+            - desiredState
+            - flavour
+            - image
+            type: object
+          status:
+            properties:
+              address:
+                type: string
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    message:
+                      type: string
+                    reason:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              error:
+                type: string
+              observedRebootGeneration:
+                format: int64
+                type: integer
+              state:
+                enum:
+                - ACTIVE
+                - PARTIALLY_ACTIVE
+                - BUILDING
+                - DELETED
+                - DELETING
+                - ERROR
+                - STARTING
+                - STOPPED
+                - STOPPING
+                - REBOOTING
+                - UNAVAILABLE
+                - UNKNOWN
+                type: string
+            required:
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

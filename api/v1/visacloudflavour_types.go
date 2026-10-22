@@ -27,8 +27,11 @@ type VISACloudFlavourSpec struct {
 	// +listType=map
 	// +listMapKey=name
 	Sidecars []v1.LocalObjectReference `json:"sidecars,omitempty"`
-	// +optional
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+	// +kubebuilder:validation:Required
+	Limits v1.ResourceList `json:"limits"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=`^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei|K|M|G|T|P|E)$`
+	DiskSize string `json:"diskSize"`
 }
 
 // +kubebuilder:object:root=true

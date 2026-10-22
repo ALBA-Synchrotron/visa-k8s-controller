@@ -8,7 +8,7 @@ metadata:
 spec:
   sidecars:
     - name: sidecar-guacd
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  diskSize: 10Gi
+  limits:
+    cpu: 100m
+    memory: 128Mi

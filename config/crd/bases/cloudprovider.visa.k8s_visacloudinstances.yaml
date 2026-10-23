@@ -132,7 +132,16 @@ spec:
                 - type
                 x-kubernetes-list-type: map
               error:
-                type: string
+                properties:
+                  code:
+                    type: string
+                  createdAt:
+                    type: string
+                  details:
+                    type: string
+                  message:
+                    type: string
+                type: object
               observedRebootGeneration:
                 format: int64
                 type: integer

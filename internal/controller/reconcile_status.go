@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	cloudproviderv1 "github.com/ALBA-Synchrotron/visa-k8s-controller/api/v1"
 	"github.com/ALBA-Synchrotron/visa-k8s-controller/internal/resource"
@@ -216,43 +218,161 @@ func syncConditions(instance *cloudproviderv1.VISACloudInstance) {
 	}
 }
 
-func podErrorSummary(pod *corev1.Pod) string {
-	for _, condition := range pod.Status.Conditions {
+func podErrorSummary(pod *corev1.Pod) cloudproviderv1.VISACloudInstanceStatusError {
+	if err, ok := errorFromConditions(pod.Status.Conditions); ok {
+		return err
+	}
+
+	if err, ok := errorFromContainerStatuses(pod); ok {
+		return err
+	}
+
+	if err, ok := errorFromPodPhase(pod); ok {
+		return err
+	}
+
+	return cloudproviderv1.VISACloudInstanceStatusError{}
+}
+
+func errorFromConditions(conditions []corev1.PodCondition) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
+	for _, condition := range conditions {
 		if condition.Type == corev1.PodScheduled &&
 			condition.Status == corev1.ConditionFalse &&
-			condition.Message != "" {
-			return condition.Message
+			(condition.Message != "" || condition.Reason != "") {
+			createdAt := ""
+			if !condition.LastTransitionTime.IsZero() {
+				createdAt = condition.LastTransitionTime.UTC().Format(time.RFC3339)
+			}
+			code := condition.Reason
+			if code == "" {
+				code = string(condition.Type)
+			}
+			message := condition.Message
+			if message == "" {
+				message = condition.Reason
+			}
+			return cloudproviderv1.VISACloudInstanceStatusError{
+				Code:      code,
+				Message:   message,
+				Details:   condition.Message,
+				CreatedAt: createdAt,
+			}, true
 		}
 	}
-	for _, cs := range pod.Status.ContainerStatuses {
-		if waiting := cs.State.Waiting; waiting != nil {
-			switch waiting.Reason {
-			case "", "ContainerCreating", "PodInitializing":
-				continue
-			}
+	return cloudproviderv1.VISACloudInstanceStatusError{}, false
+}
 
-			if waiting.Message != "" {
-				return waiting.Reason + ": " + waiting.Message
-			}
-			return waiting.Reason
-		}
+func errorFromWaitingState(pod *corev1.Pod, waiting *corev1.ContainerStateWaiting) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
+	if waiting == nil {
+		return cloudproviderv1.VISACloudInstanceStatusError{}, false
+	}
 
-		if terminated := cs.State.Terminated; terminated != nil {
-			if terminated.Message != "" {
-				return terminated.Reason + ": " + terminated.Message
-			}
-			return terminated.Reason
+	switch waiting.Reason {
+	case "", "ContainerCreating", "PodInitializing":
+		return cloudproviderv1.VISACloudInstanceStatusError{}, false
+	}
+
+	createdAt := ""
+	if !pod.CreationTimestamp.IsZero() {
+		createdAt = pod.CreationTimestamp.UTC().Format(time.RFC3339)
+	}
+	if pod.Status.StartTime != nil && !pod.Status.StartTime.IsZero() {
+		createdAt = pod.Status.StartTime.UTC().Format(time.RFC3339)
+	}
+
+	message := waiting.Message
+	if message == "" {
+		message = waiting.Reason
+	}
+
+	return cloudproviderv1.VISACloudInstanceStatusError{
+		Code:      waiting.Reason,
+		Message:   message,
+		Details:   waiting.Message,
+		CreatedAt: createdAt,
+	}, true
+}
+
+func errorFromTerminatedState(terminated *corev1.ContainerStateTerminated) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
+	if terminated == nil || terminated.Reason == "Completed" || (terminated.Reason == "" && terminated.ExitCode == 0 && terminated.Message == "") {
+		return cloudproviderv1.VISACloudInstanceStatusError{}, false
+	}
+
+	createdAt := ""
+	if !terminated.FinishedAt.IsZero() {
+		createdAt = terminated.FinishedAt.UTC().Format(time.RFC3339)
+	} else if !terminated.StartedAt.IsZero() {
+		createdAt = terminated.StartedAt.UTC().Format(time.RFC3339)
+	}
+
+	code := terminated.Reason
+	if code == "" {
+		code = fmt.Sprintf("ExitCode%d", terminated.ExitCode)
+	}
+
+	message := terminated.Message
+	if message == "" {
+		if terminated.Reason != "" {
+			message = terminated.Reason
+		} else {
+			message = fmt.Sprintf("Container terminated with exit code %d", terminated.ExitCode)
 		}
 	}
 
-	if pod.Status.Phase == corev1.PodFailed {
-		if pod.Status.Message != "" {
-			return pod.Status.Message
+	return cloudproviderv1.VISACloudInstanceStatusError{
+		Code:      code,
+		Message:   message,
+		Details:   terminated.Message,
+		CreatedAt: createdAt,
+	}, true
+}
+
+func errorFromContainerStatuses(pod *corev1.Pod) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
+	containerStatuses := append([]corev1.ContainerStatus{}, pod.Status.InitContainerStatuses...)
+	containerStatuses = append(containerStatuses, pod.Status.ContainerStatuses...)
+
+	for _, cs := range containerStatuses {
+		if err, ok := errorFromWaitingState(pod, cs.State.Waiting); ok {
+			return err, true
 		}
+		if err, ok := errorFromTerminatedState(cs.State.Terminated); ok {
+			return err, true
+		}
+	}
+	return cloudproviderv1.VISACloudInstanceStatusError{}, false
+}
+
+func errorFromPodPhase(pod *corev1.Pod) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
+	if pod.Status.Phase != corev1.PodFailed {
+		return cloudproviderv1.VISACloudInstanceStatusError{}, false
+	}
+
+	createdAt := ""
+	if !pod.CreationTimestamp.IsZero() {
+		createdAt = pod.CreationTimestamp.UTC().Format(time.RFC3339)
+	}
+	if pod.Status.StartTime != nil && !pod.Status.StartTime.IsZero() {
+		createdAt = pod.Status.StartTime.UTC().Format(time.RFC3339)
+	}
+
+	code := pod.Status.Reason
+	if code == "" {
+		code = "PodFailed"
+	}
+
+	message := pod.Status.Message
+	if message == "" {
 		if pod.Status.Reason != "" {
-			return pod.Status.Reason
+			message = pod.Status.Reason
+		} else {
+			message = "Pod failed"
 		}
-		return "Pod failed"
 	}
-	return ""
+
+	return cloudproviderv1.VISACloudInstanceStatusError{
+		Code:      code,
+		Message:   message,
+		Details:   pod.Status.Message,
+		CreatedAt: createdAt,
+	}, true
 }

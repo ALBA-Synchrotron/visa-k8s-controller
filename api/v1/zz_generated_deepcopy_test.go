@@ -201,6 +201,16 @@ func TestDeepCopyTypes(t *testing.T) {
 	cond := &VISACloudInstanceCondition{Type: Ready, Status: corev1.ConditionTrue}
 	g.Expect(cond.DeepCopy()).To(Equal(cond))
 
+	var nilErr *VISACloudInstanceStatusError
+	g.Expect(nilErr.DeepCopy()).To(BeNil())
+	errObj := &VISACloudInstanceStatusError{
+		Message:   "msg",
+		Code:      "code",
+		Details:   "details",
+		CreatedAt: "2026-10-23T12:00:00Z",
+	}
+	g.Expect(errObj.DeepCopy()).To(Equal(errObj))
+
 	// VISASidecarConfig
 	var nilSC *VISACloudSidecarConfig
 	g.Expect(nilSC.DeepCopy()).To(BeNil())

@@ -16,6 +16,17 @@ limitations under the License.
 
 package v1
 
+type VISACloudInstanceStatusError struct {
+	// +optional
+	Message string `json:"message,omitempty"`
+	// +optional
+	Code string `json:"code,omitempty"`
+	// +optional
+	Details string `json:"details,omitempty"`
+	// +optional
+	CreatedAt string `json:"createdAt,omitempty"`
+}
+
 type VISACloudInstanceStatus struct {
 
 	// +listType=map
@@ -30,5 +41,5 @@ type VISACloudInstanceStatus struct {
 	// +optional
 	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
 	// +optional
-	Error string `json:"error,omitempty"`
+	Error VISACloudInstanceStatusError `json:"error,omitempty"`
 }

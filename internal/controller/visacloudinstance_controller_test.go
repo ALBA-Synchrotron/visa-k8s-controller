@@ -493,7 +493,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("0/1 nodes available: insufficient memory"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("0/1 nodes available: insufficient memory"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodScheduled"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("0/1 nodes available: insufficient memory"))
 
 			// 2. Container waiting state
 			pod.Status.Conditions = nil
@@ -516,7 +518,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("ImagePullBackOff: Back-off pulling image"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Back-off pulling image"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("ImagePullBackOff"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Back-off pulling image"))
 
 			// 3. Container terminated state
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -538,7 +542,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("OOMKilled: Container killed due to OOM"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Container killed due to OOM"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("OOMKilled"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Container killed due to OOM"))
 
 			// 4. Pod in PodFailed phase
 			pod.Status.ContainerStatuses = nil
@@ -553,7 +559,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateError))
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Node was evicted"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Node was evicted"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Node was evicted"))
 
 			// 5. Pod in PodFailed phase with Reason only
 			pod.Status.Message = ""
@@ -566,7 +574,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 6. Pod in PodFailed phase without reason/message
 			pod.Status.Reason = ""
@@ -578,7 +588,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Pod failed"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Pod failed"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 7. Pod in PodSucceeded phase
 			pod.Status.Phase = corev1.PodSucceeded
@@ -591,6 +603,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateError))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
 			// 8. DesiredState STOPPED with Pod still Pending (StateStopping)
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateStopped
@@ -628,7 +641,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			}
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateActive
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 12. Container waiting with ignored reasons
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -642,7 +657,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal(""))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
 			// 13. Container terminated with reason only (empty message)
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -656,7 +671,9 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 14. PodScheduled condition false without message
 			pod.Status.ContainerStatuses = nil
@@ -667,15 +684,31 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal(""))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
-			// 15. Pod running without PodIP
+			// 15. Container terminated completed (no error)
+			pod.Status.Conditions = nil
+			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+				{
+					Name: "primary",
+					State: corev1.ContainerState{
+						Terminated: &corev1.ContainerStateTerminated{
+							Reason:   "Completed",
+							ExitCode: 0,
+						},
+					},
+				},
+			}
+			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
+
+			// 16. Pod running without PodIP
 			pod.Status.Phase = corev1.PodRunning
 			pod.Status.PodIP = ""
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
 			gomega.Expect(inst.Status.Address).To(gomega.BeNil())
 
-			// 16. Instance with DeletionTimestamp in syncStatusFromPod and syncStatusWithoutPod
+			// 17. Instance with DeletionTimestamp in syncStatusFromPod and syncStatusWithoutPod
 			now := metav1.Now()
 			inst.DeletionTimestamp = &now
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)

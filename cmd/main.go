@@ -200,7 +200,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&controller.VISAInstanceReconciler{
+	if err := (&controller.VISACloudInstanceReconciler{
 		Client:           mgr.GetClient(),
 		Scheme:           mgr.GetScheme(),
 		Recorder:         mgr.GetEventRecorderFor("visainstance-controller"),

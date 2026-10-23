@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-var _ = ginkgo.Describe("VISAInstance Controller", func() {
+var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 	ginkgo.Context("When reconciling a resource", func() {
 		const (
 			resourceName      = "test-visa-instance"
@@ -44,12 +44,12 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 		ctx := context.Background()
 
 		var (
-			visaInstance         *cloudproviderv1.VISAInstance
+			VISACloudInstance    *cloudproviderv1.VISACloudInstance
 			image                *cloudproviderv1.VISACloudImage
 			flavour              *cloudproviderv1.VISACloudFlavour
-			jupyterSidecarConfig *cloudproviderv1.VISASidecarConfig
+			jupyterSidecarConfig *cloudproviderv1.VISACloudSidecarConfig
 			securityGroup        *cloudproviderv1.VISACloudSecurityGroup
-			controllerReconciler *VISAInstanceReconciler
+			controllerReconciler *VISACloudInstanceReconciler
 		)
 
 		typeNamespacedName := types.NamespacedName{
@@ -94,12 +94,12 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			}
 			gomega.Expect(k8sClient.Create(ctx, flavour)).Should(gomega.Succeed())
 
-			jupyterSidecarConfig = &cloudproviderv1.VISASidecarConfig{
+			jupyterSidecarConfig = &cloudproviderv1.VISACloudSidecarConfig{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "guacd",
 					Namespace: resourceNamespace,
 				},
-				Spec: cloudproviderv1.VISASidecarConfigSpec{
+				Spec: cloudproviderv1.VISACloudSidecarConfigSpec{
 					ContainerSpec: cloudproviderv1.ContainerSpec{
 						FullImageReference: "docker.io/guacamole/guacd:latest",
 					},
@@ -115,12 +115,12 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			}
 			gomega.Expect(k8sClient.Create(ctx, securityGroup)).Should(gomega.Succeed())
 
-			visaInstance = &cloudproviderv1.VISAInstance{
+			VISACloudInstance = &cloudproviderv1.VISACloudInstance{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      resourceName,
 					Namespace: resourceNamespace,
 				},
-				Spec: cloudproviderv1.VISAInstanceSpec{
+				Spec: cloudproviderv1.VISACloudInstanceSpec{
 					Image: corev1.LocalObjectReference{
 						Name: "test-image",
 					},
@@ -133,9 +133,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 					DesiredState: cloudproviderv1.DesiredStateActive,
 				},
 			}
-			gomega.Expect(k8sClient.Create(ctx, visaInstance)).Should(gomega.Succeed())
+			gomega.Expect(k8sClient.Create(ctx, VISACloudInstance)).Should(gomega.Succeed())
 
-			controllerReconciler = &VISAInstanceReconciler{
+			controllerReconciler = &VISACloudInstanceReconciler{
 				Client:           k8sClient,
 				Scheme:           k8sClient.Scheme(),
 				Recorder:         record.NewFakeRecorder(100),
@@ -146,8 +146,8 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 		ginkgo.AfterEach(func() {
 			ginkgo.By("cleanup of created fixtures")
 
-			if visaInstance != nil {
-				fetchedInstance := &cloudproviderv1.VISAInstance{}
+			if VISACloudInstance != nil {
+				fetchedInstance := &cloudproviderv1.VISACloudInstance{}
 				if err := k8sClient.Get(ctx, typeNamespacedName, fetchedInstance); err == nil {
 					fetchedInstance.Finalizers = nil
 					_ = k8sClient.Update(ctx, fetchedInstance)
@@ -193,7 +193,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(createdPod.OwnerReferences[0].Name).To(gomega.Equal(resourceName))
 
 			ginkgo.By("verifying the instance has the finalizer added")
-			updatedInstance := &cloudproviderv1.VISAInstance{}
+			updatedInstance := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, updatedInstance)).To(gomega.Succeed())
 			gomega.Expect(updatedInstance.Finalizers).To(gomega.ContainElement("cloudprovider.visa.k8s/finalizer"))
 
@@ -247,7 +247,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(k8sClient.Get(ctx, podKey, createdPod)).To(gomega.Succeed())
 
 			ginkgo.By("changing desiredState to STOPPED")
-			updatedInstance := &cloudproviderv1.VISAInstance{}
+			updatedInstance := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, updatedInstance)).To(gomega.Succeed())
 			updatedInstance.Spec.DesiredState = cloudproviderv1.DesiredStateStopped
 			gomega.Expect(k8sClient.Update(ctx, updatedInstance)).To(gomega.Succeed())
@@ -286,7 +286,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(k8sClient.Get(ctx, podKey, createdPod)).To(gomega.Succeed())
 
 			ginkgo.By("2. Transitioning instance to STOPPED")
-			inst := &cloudproviderv1.VISAInstance{}
+			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateStopped
 			gomega.Expect(k8sClient.Update(ctx, inst)).To(gomega.Succeed())
@@ -354,7 +354,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-			inst := &cloudproviderv1.VISAInstance{}
+			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateActive))
 			gomega.Expect(inst.Status.ObservedRebootGeneration).To(gomega.Equal(int64(0)))
@@ -413,7 +413,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 
 		ginkgo.It("should pause reconciliation when pauseReconciliation label is set", func() {
 			ginkgo.By("setting pause reconciliation label")
-			inst := &cloudproviderv1.VISAInstance{}
+			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			if inst.Labels == nil {
 				inst.Labels = make(map[string]string)
@@ -436,12 +436,12 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 		})
 
 		ginkgo.It("should return error when referenced resources are missing", func() {
-			missingInst := &cloudproviderv1.VISAInstance{
+			missingInst := &cloudproviderv1.VISACloudInstance{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "missing-res-instance",
 					Namespace: resourceNamespace,
 				},
-				Spec: cloudproviderv1.VISAInstanceSpec{
+				Spec: cloudproviderv1.VISACloudInstanceSpec{
 					Image:        corev1.LocalObjectReference{Name: "non-existent-img"},
 					Flavour:      corev1.LocalObjectReference{Name: "test-flavour"},
 					DesiredState: cloudproviderv1.DesiredStateActive,
@@ -491,9 +491,11 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-			inst := &cloudproviderv1.VISAInstance{}
+			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("0/1 nodes available: insufficient memory"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("0/1 nodes available: insufficient memory"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodScheduled"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("0/1 nodes available: insufficient memory"))
 
 			// 2. Container waiting state
 			pod.Status.Conditions = nil
@@ -516,7 +518,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("ImagePullBackOff: Back-off pulling image"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Back-off pulling image"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("ImagePullBackOff"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Back-off pulling image"))
 
 			// 3. Container terminated state
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -538,7 +542,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("OOMKilled: Container killed due to OOM"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Container killed due to OOM"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("OOMKilled"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Container killed due to OOM"))
 
 			// 4. Pod in PodFailed phase
 			pod.Status.ContainerStatuses = nil
@@ -553,7 +559,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateError))
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Node was evicted"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Node was evicted"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Node was evicted"))
 
 			// 5. Pod in PodFailed phase with Reason only
 			pod.Status.Message = ""
@@ -566,7 +574,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 6. Pod in PodFailed phase without reason/message
 			pod.Status.Reason = ""
@@ -578,7 +588,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Pod failed"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Pod failed"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 7. Pod in PodSucceeded phase
 			pod.Status.Phase = corev1.PodSucceeded
@@ -591,6 +603,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateError))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
 			// 8. DesiredState STOPPED with Pod still Pending (StateStopping)
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateStopped
@@ -628,7 +641,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			}
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateActive
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 12. Container waiting with ignored reasons
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -642,7 +657,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal(""))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
 			// 13. Container terminated with reason only (empty message)
 			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
@@ -656,7 +671,9 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 14. PodScheduled condition false without message
 			pod.Status.ContainerStatuses = nil
@@ -667,15 +684,31 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error).To(gomega.Equal(""))
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
 
-			// 15. Pod running without PodIP
+			// 15. Container terminated completed (no error)
+			pod.Status.Conditions = nil
+			pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+				{
+					Name: "primary",
+					State: corev1.ContainerState{
+						Terminated: &corev1.ContainerStateTerminated{
+							Reason:   "Completed",
+							ExitCode: 0,
+						},
+					},
+				},
+			}
+			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
+			gomega.Expect(inst.Status.Error).To(gomega.Equal(cloudproviderv1.VISACloudInstanceStatusError{}))
+
+			// 16. Pod running without PodIP
 			pod.Status.Phase = corev1.PodRunning
 			pod.Status.PodIP = ""
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
 			gomega.Expect(inst.Status.Address).To(gomega.BeNil())
 
-			// 16. Instance with DeletionTimestamp in syncStatusFromPod and syncStatusWithoutPod
+			// 17. Instance with DeletionTimestamp in syncStatusFromPod and syncStatusWithoutPod
 			now := metav1.Now()
 			inst.DeletionTimestamp = &now
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
@@ -701,7 +734,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			gomega.Expect(k8sClient.Get(ctx, podKey, createdPod)).To(gomega.Succeed())
 
 			ginkgo.By("deleting the instance")
-			instanceToDelete := &cloudproviderv1.VISAInstance{}
+			instanceToDelete := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, instanceToDelete)).To(gomega.Succeed())
 			gomega.Expect(k8sClient.Delete(ctx, instanceToDelete)).To(gomega.Succeed())
 
@@ -731,7 +764,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 		})
 
 		ginkgo.It("should handle reconcileDelete when finalizer is already removed", func() {
-			inst := &cloudproviderv1.VISAInstance{
+			inst := &cloudproviderv1.VISACloudInstance{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "no-finalizer-inst",
 					Namespace: resourceNamespace,
@@ -748,22 +781,22 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-			r := &VISAInstanceReconciler{
+			r := &VISACloudInstanceReconciler{
 				Client:   mgr.GetClient(),
 				Scheme:   mgr.GetScheme(),
-				Recorder: mgr.GetEventRecorderFor("visainstance-controller"),
+				Recorder: mgr.GetEventRecorderFor("VISACloudInstance-controller"),
 			}
 			err = r.SetupWithManager(mgr)
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
 
 		ginkgo.It("should handle owner reference failure in reconcileActive", func() {
-			badReconciler := &VISAInstanceReconciler{
+			badReconciler := &VISACloudInstanceReconciler{
 				Client:   k8sClient,
 				Scheme:   runtime.NewScheme(),
 				Recorder: record.NewFakeRecorder(10),
 			}
-			_, err := badReconciler.reconcileActive(ctx, visaInstance)
+			_, err := badReconciler.reconcileActive(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 			gomega.Expect(err.Error()).To(gomega.ContainSubstring("no kind is registered"))
 		})
@@ -785,7 +818,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 
 			now := metav1.Now()
 			pod.DeletionTimestamp = &now
-			testInst := &cloudproviderv1.VISAInstance{
+			testInst := &cloudproviderv1.VISACloudInstance{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-deleting-pod",
 					Namespace: resourceNamespace,
@@ -798,41 +831,41 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 		ginkgo.It("should handle error branches with injected errors", func() {
 			testErr := k8serrors.NewInternalError(context.DeadlineExceeded)
 
-			// 1. getVISAInstance error in Reconcile
+			// 1. getVISACloudInstance error in Reconcile
 			errCl := &errorClient{Client: k8sClient, getErr: testErr}
-			r := &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r := &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			_, err := r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 2. ensureFinalizer error in Reconcile
-			instWithoutFinalizer := visaInstance.DeepCopy()
+			instWithoutFinalizer := VISACloudInstance.DeepCopy()
 			instWithoutFinalizer.Finalizers = nil
 			updateErrCl := &errorClient{Client: k8sClient, updateErr: testErr}
-			r = &VISAInstanceReconciler{Client: updateErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: updateErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			err = r.ensureFinalizer(ctx, instWithoutFinalizer)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 3. Pause reconciliation with Status Patch error
-			if visaInstance.Labels == nil {
-				visaInstance.Labels = make(map[string]string)
+			if VISACloudInstance.Labels == nil {
+				VISACloudInstance.Labels = make(map[string]string)
 			}
-			visaInstance.Labels[pauseReconciliationLabel] = "true"
-			gomega.Expect(k8sClient.Update(ctx, visaInstance)).To(gomega.Succeed())
+			VISACloudInstance.Labels[pauseReconciliationLabel] = "true"
+			gomega.Expect(k8sClient.Update(ctx, VISACloudInstance)).To(gomega.Succeed())
 
 			statusErrCl := &errorStatusClient{Client: k8sClient, patchErr: testErr}
-			r = &VISAInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			res, err := r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			gomega.Expect(res).To(gomega.Equal(ctrl.Result{}))
 
-			delete(visaInstance.Labels, pauseReconciliationLabel)
-			gomega.Expect(k8sClient.Update(ctx, visaInstance)).To(gomega.Succeed())
+			delete(VISACloudInstance.Labels, pauseReconciliationLabel)
+			gomega.Expect(k8sClient.Update(ctx, VISACloudInstance)).To(gomega.Succeed())
 
 			// 4. reconcilePod Create error
 			createErrCl := &errorClient{Client: k8sClient, createErr: testErr}
-			r = &VISAInstanceReconciler{Client: createErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: createErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			desiredPod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "non-existent-pod-xyz", Namespace: resourceNamespace}}
-			err = r.reconcilePod(ctx, visaInstance, desiredPod)
+			err = r.reconcilePod(ctx, VISACloudInstance, desiredPod)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 5. reconcilePod Delete error (during reprovision)
@@ -848,7 +881,7 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 			defer func() { _ = k8sClient.Delete(ctx, podForReprovision) }()
 
 			deleteErrCl := &errorClient{Client: k8sClient, deleteErr: testErr}
-			r = &VISAInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			desiredReprovisionPod := &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "pod-for-reprovision",
@@ -856,72 +889,72 @@ var _ = ginkgo.Describe("VISAInstance Controller", func() {
 					Annotations: map[string]string{"cloudprovider.visa.k8s/spec-hash": "new-hash"},
 				},
 			}
-			err = r.reconcilePod(ctx, visaInstance, desiredReprovisionPod)
+			err = r.reconcilePod(ctx, VISACloudInstance, desiredReprovisionPod)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 6. reconcilePod Get error (other than NotFound)
-			r = &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			err = r.reconcilePod(ctx, visaInstance, desiredReprovisionPod)
+			r = &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			err = r.reconcilePod(ctx, VISACloudInstance, desiredReprovisionPod)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 7. deletePod Get error (other than NotFound)
-			err = r.deletePod(ctx, visaInstance)
+			err = r.deletePod(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 8. deletePod Delete error
-			r = &VISAInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			existingPod := &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      visaInstance.Name + "-runtime",
+					Name:      VISACloudInstance.Name + "-runtime",
 					Namespace: resourceNamespace,
 				},
 				Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: "t", Image: "busybox"}}},
 			}
 			_ = k8sClient.Create(ctx, existingPod)
-			err = r.deletePod(ctx, visaInstance)
+			err = r.deletePod(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 9. deleteResources Get error and Delete error
-			r = &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			_, err = r.deleteResources(ctx, visaInstance)
+			r = &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			_, err = r.deleteResources(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			r = &VISAInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			_, err = r.deleteResources(ctx, visaInstance)
+			r = &VISACloudInstanceReconciler{Client: deleteErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			_, err = r.deleteResources(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 10. reconcileDelete with errors
-			r = &VISAInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			instWithFinalizer := visaInstance.DeepCopy()
+			r = &VISACloudInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			instWithFinalizer := VISACloudInstance.DeepCopy()
 			instWithFinalizer.Finalizers = []string{deletionFinalizer}
 			now := metav1.Now()
 			instWithFinalizer.DeletionTimestamp = &now
 			_, err = r.reconcileDelete(ctx, instWithFinalizer)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			r = &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			_, err = r.reconcileDelete(ctx, instWithFinalizer)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			r = &VISAInstanceReconciler{Client: updateErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: updateErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			_, err = r.reconcileDelete(ctx, instWithFinalizer)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 11. reconcileStopped error on deletePod
-			r = &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			_, err = r.reconcileStopped(ctx, visaInstance)
+			r = &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			_, err = r.reconcileStopped(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 12. reconcileActive errors on getPod and syncStatusFromPod
-			r = &VISAInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
-			_, err = r.reconcileActive(ctx, visaInstance)
+			r = &VISACloudInstanceReconciler{Client: statusErrCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			_, err = r.reconcileActive(ctx, VISACloudInstance)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
 			// 13. Reconcile error when desiredState is STOPPED and deletePod fails
-			stoppedInst := visaInstance.DeepCopy()
+			stoppedInst := VISACloudInstance.DeepCopy()
 			stoppedInst.Spec.DesiredState = cloudproviderv1.DesiredStateStopped
 			_ = k8sClient.Update(ctx, stoppedInst)
-			r = &VISAInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
+			r = &VISACloudInstanceReconciler{Client: errCl, Scheme: k8sClient.Scheme(), Recorder: record.NewFakeRecorder(10)}
 			_, err = r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
 			gomega.Expect(err).To(gomega.HaveOccurred())
 		})

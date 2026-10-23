@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: visainstances.cloudprovider.visa.k8s
+  name: visacloudinstances.cloudprovider.visa.k8s
 spec:
   group: cloudprovider.visa.k8s
   names:
-    kind: VISAInstance
-    listKind: VISAInstanceList
-    plural: visainstances
-    singular: visainstance
+    kind: VISACloudInstance
+    listKind: VISACloudInstanceList
+    plural: visacloudinstances
+    singular: visacloudinstance
   scope: Namespaced
   versions:
   - name: v1
@@ -132,7 +132,16 @@ spec:
                 - type
                 x-kubernetes-list-type: map
               error:
-                type: string
+                properties:
+                  code:
+                    type: string
+                  createdAt:
+                    type: string
+                  details:
+                    type: string
+                  message:
+                    type: string
+                type: object
               observedRebootGeneration:
                 format: int64
                 type: integer

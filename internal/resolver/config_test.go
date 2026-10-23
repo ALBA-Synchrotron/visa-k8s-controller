@@ -63,24 +63,24 @@ func TestConfigResolver(t *testing.T) {
 		},
 	}
 
-	sidecar1 := &cloudproviderv1.VISASidecarConfig{
+	sidecar1 := &cloudproviderv1.VISACloudSidecarConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sidecar-1",
 			Namespace: namespace,
 		},
-		Spec: cloudproviderv1.VISASidecarConfigSpec{
+		Spec: cloudproviderv1.VISACloudSidecarConfigSpec{
 			ContainerSpec: cloudproviderv1.ContainerSpec{
 				FullImageReference: "sidecar-img-1:latest",
 			},
 		},
 	}
 
-	sidecar2 := &cloudproviderv1.VISASidecarConfig{
+	sidecar2 := &cloudproviderv1.VISACloudSidecarConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sidecar-2",
 			Namespace: namespace,
 		},
-		Spec: cloudproviderv1.VISASidecarConfigSpec{
+		Spec: cloudproviderv1.VISACloudSidecarConfigSpec{
 			ContainerSpec: cloudproviderv1.ContainerSpec{
 				FullImageReference: "sidecar-img-2:latest",
 			},
@@ -101,12 +101,12 @@ func TestConfigResolver(t *testing.T) {
 
 	r := New(fakeClient)
 
-	instance := &cloudproviderv1.VISAInstance{
+	instance := &cloudproviderv1.VISACloudInstance{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "instance-1",
 			Namespace: namespace,
 		},
-		Spec: cloudproviderv1.VISAInstanceSpec{
+		Spec: cloudproviderv1.VISACloudInstanceSpec{
 			Image:   corev1.LocalObjectReference{Name: "img-1"},
 			Flavour: corev1.LocalObjectReference{Name: "flav-1"},
 			SecurityGroups: []corev1.LocalObjectReference{

@@ -33,7 +33,7 @@ func TestPodBuilder(t *testing.T) {
 
 	builder := PodBuilder{}
 
-	instance := &cloudproviderv1.VISAInstance{
+	instance := &cloudproviderv1.VISACloudInstance{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-instance",
 			Namespace: testNs,
@@ -44,7 +44,7 @@ func TestPodBuilder(t *testing.T) {
 				"custom.annotation": "value2",
 			},
 		},
-		Spec: cloudproviderv1.VISAInstanceSpec{
+		Spec: cloudproviderv1.VISACloudInstanceSpec{
 			Image:   corev1.LocalObjectReference{Name: "image-1"},
 			Flavour: corev1.LocalObjectReference{Name: "flavour-1"},
 			SecurityGroups: []corev1.LocalObjectReference{
@@ -54,7 +54,7 @@ func TestPodBuilder(t *testing.T) {
 			DesiredState:     cloudproviderv1.DesiredStateActive,
 			RebootGeneration: 3,
 		},
-		Status: cloudproviderv1.VISAInstanceStatus{
+		Status: cloudproviderv1.VISACloudInstanceStatus{
 			ObservedRebootGeneration: 2,
 		},
 	}
@@ -89,13 +89,13 @@ func TestPodBuilder(t *testing.T) {
 				Namespace: testNs,
 			},
 		},
-		Sidecars: []*cloudproviderv1.VISASidecarConfig{
+		Sidecars: []*cloudproviderv1.VISACloudSidecarConfig{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "sidecar-a",
 					Namespace: testNs,
 				},
-				Spec: cloudproviderv1.VISASidecarConfigSpec{
+				Spec: cloudproviderv1.VISACloudSidecarConfigSpec{
 					ContainerSpec: cloudproviderv1.ContainerSpec{
 						FullImageReference: "sidecar-a:1.0",
 					},
@@ -147,25 +147,25 @@ func TestPodBuilder(t *testing.T) {
 	g.Expect(pod.Spec.Containers[1].Image).To(Equal("sidecar-a:1.0"))
 }
 
-func TestHashVISAInstanceSpec(t *testing.T) {
+func TestHashVISACloudInstanceSpec(t *testing.T) {
 	g := NewWithT(t)
 
-	spec1 := cloudproviderv1.VISAInstanceSpec{
+	spec1 := cloudproviderv1.VISACloudInstanceSpec{
 		Image:            corev1.LocalObjectReference{Name: "img1"},
 		Flavour:          corev1.LocalObjectReference{Name: "flav1"},
 		DesiredState:     cloudproviderv1.DesiredStateActive,
 		RebootGeneration: 0,
 	}
 
-	spec2 := cloudproviderv1.VISAInstanceSpec{
+	spec2 := cloudproviderv1.VISACloudInstanceSpec{
 		Image:            corev1.LocalObjectReference{Name: "img1"},
 		Flavour:          corev1.LocalObjectReference{Name: "flav1"},
 		DesiredState:     cloudproviderv1.DesiredStateActive,
 		RebootGeneration: 1,
 	}
 
-	hash1 := HashVISAInstanceSpec(spec1)
-	hash2 := HashVISAInstanceSpec(spec2)
+	hash1 := HashVISACloudInstanceSpec(spec1)
+	hash2 := HashVISACloudInstanceSpec(spec2)
 
 	g.Expect(hash1).NotTo(BeEmpty())
 	g.Expect(hash2).NotTo(BeEmpty())

@@ -24,10 +24,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func TestVISAInstanceStatusConditions(t *testing.T) {
+func TestVISACloudInstanceStatusConditions(t *testing.T) {
 	g := NewWithT(t)
 
-	status := &VISAInstanceStatus{}
+	status := &VISACloudInstanceStatus{}
 
 	// Test GetCondition when condition does not exist
 	cond := status.GetCondition(Ready)

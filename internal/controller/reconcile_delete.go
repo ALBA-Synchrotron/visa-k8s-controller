@@ -13,7 +13,7 @@ import (
 
 const deletionFinalizer = "cloudprovider.visa.k8s/finalizer"
 
-func (r *VISAInstanceReconciler) ensureFinalizer(ctx context.Context, instance *cloudproviderv1.VISAInstance) error {
+func (r *VISACloudInstanceReconciler) ensureFinalizer(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) error {
 	if controllerutil.ContainsFinalizer(instance, deletionFinalizer) {
 		return nil
 	}
@@ -21,14 +21,14 @@ func (r *VISAInstanceReconciler) ensureFinalizer(ctx context.Context, instance *
 	return r.Update(ctx, instance)
 }
 
-func (r *VISAInstanceReconciler) removeFinalizer(ctx context.Context, instance *cloudproviderv1.VISAInstance) error {
+func (r *VISACloudInstanceReconciler) removeFinalizer(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) error {
 	controllerutil.RemoveFinalizer(instance, deletionFinalizer)
 	return client.IgnoreNotFound(
 		r.Update(ctx, instance),
 	)
 }
 
-func (r *VISAInstanceReconciler) reconcileDelete(ctx context.Context, instance *cloudproviderv1.VISAInstance) (ctrl.Result, error) {
+func (r *VISACloudInstanceReconciler) reconcileDelete(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) (ctrl.Result, error) {
 
 	if !controllerutil.ContainsFinalizer(instance, deletionFinalizer) {
 		return ctrl.Result{}, nil
@@ -50,7 +50,7 @@ func (r *VISAInstanceReconciler) reconcileDelete(ctx context.Context, instance *
 	return ctrl.Result{}, nil
 }
 
-func (r *VISAInstanceReconciler) deleteResources(ctx context.Context, instance *cloudproviderv1.VISAInstance) (bool, error) {
+func (r *VISACloudInstanceReconciler) deleteResources(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) (bool, error) {
 
 	pod, err := r.getPod(ctx, instance)
 

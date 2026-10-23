@@ -17,38 +17,51 @@ limitations under the License.
 package v1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type VISASidecarConfigSpec struct {
+type VISACloudInstanceSpec struct {
 
 	// +required
-	ContainerSpec `json:"containerSpec"`
+	Image v1.LocalObjectReference `json:"image"`
+	// +required
+	Flavour v1.LocalObjectReference `json:"flavour"`
+	// +optional
+	SecurityGroups []v1.LocalObjectReference `json:"securityGroups,omitempty"`
+	// +required
+	// +kubebuilder:validation:Enum:=ACTIVE;DELETED;STOPPED
+	DesiredState DesiredInstanceState `json:"desiredState"`
+	// +optional
+	RebootGeneration int64 `json:"rebootGeneration,omitempty"`
+	// +optional
+	AssociatedProposals []string `json:"associatedProposals,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced
-type VISASidecarConfig struct {
+type VISACloudInstance struct {
 	metav1.TypeMeta `json:",inline"`
-
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
 	// +required
-	Spec VISASidecarConfigSpec `json:"spec"`
+	Spec VISACloudInstanceSpec `json:"spec"`
+	// +optional
+	Status VISACloudInstanceStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
-type VISASidecarConfigList struct {
+type VISACloudInstanceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []VISASidecarConfig `json:"items"`
+	Items           []VISACloudInstance `json:"items"`
 }
 
 func init() {
 	SchemeBuilder.Register(func(s *runtime.Scheme) error {
-		s.AddKnownTypes(SchemeGroupVersion, &VISASidecarConfig{}, &VISASidecarConfigList{})
+		s.AddKnownTypes(SchemeGroupVersion, &VISACloudInstance{}, &VISACloudInstanceList{})
 		return nil
 	})
 }

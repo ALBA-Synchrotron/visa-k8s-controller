@@ -6,14 +6,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = ginkgo.Describe("VISASidecarConfig validation", func() {
+var _ = ginkgo.Describe("VISACloudSidecarConfig validation", func() {
 	ginkgo.It("accepts valid object", func() {
-		device := &VISASidecarConfig{
+		device := &VISACloudSidecarConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-guacd-sidecar",
 				Namespace: "default",
 			},
-			Spec: VISASidecarConfigSpec{
+			Spec: VISACloudSidecarConfigSpec{
 				ContainerSpec: ContainerSpec{
 					FullImageReference: "guacd:latest",
 				},
@@ -23,12 +23,12 @@ var _ = ginkgo.Describe("VISASidecarConfig validation", func() {
 	})
 
 	ginkgo.It("rejects empty image reference", func() {
-		device := &VISASidecarConfig{
+		device := &VISACloudSidecarConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-guacd-sidecar",
 				Namespace: "default",
 			},
-			Spec: VISASidecarConfigSpec{
+			Spec: VISACloudSidecarConfigSpec{
 				ContainerSpec: ContainerSpec{
 					FullImageReference: "aguacate:latest",
 				},

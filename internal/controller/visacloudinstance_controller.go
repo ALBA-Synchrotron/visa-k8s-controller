@@ -31,7 +31,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type VISAInstanceReconciler struct {
+type VISACloudInstanceReconciler struct {
 	client.Client
 	Scheme           *runtime.Scheme
 	Recorder         record.EventRecorder
@@ -47,14 +47,14 @@ const (
 // +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudimages,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudflavours,verbs=get;list;watch
-// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visasidecarconfigs,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudsidecarconfigs,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudsecuritygroups,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visaclouddevices,verbs=get;list;watch
-// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visainstances/finalizers,verbs=update
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudinstances,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudinstances/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloudprovider.visa.k8s,resources=visacloudinstances/finalizers,verbs=update
 
-func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *VISACloudInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var (
 		result ctrl.Result
 		err    error
@@ -64,7 +64,7 @@ func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	logger.Info("Reconciling VISAInstance")
 
-	visaInstance, err := r.getVISAInstance(ctx, req.NamespacedName)
+	visaInstance, err := r.getVISACloudInstance(ctx, req.NamespacedName)
 
 	if client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
@@ -111,16 +111,16 @@ func (r *VISAInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 }
 
-func (r *VISAInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *VISACloudInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&cloudproviderv1.VISAInstance{}).
+		For(&cloudproviderv1.VISACloudInstance{}).
 		Named("visainstance").
 		Owns(&corev1.Pod{}).
 		Complete(r)
 }
 
-func (r *VISAInstanceReconciler) getVISAInstance(ctx context.Context, namespacedName types.NamespacedName) (*cloudproviderv1.VISAInstance, error) {
-	visaInstance := &cloudproviderv1.VISAInstance{}
+func (r *VISACloudInstanceReconciler) getVISACloudInstance(ctx context.Context, namespacedName types.NamespacedName) (*cloudproviderv1.VISACloudInstance, error) {
+	visaInstance := &cloudproviderv1.VISACloudInstance{}
 	err := r.Get(ctx, namespacedName, visaInstance)
 	return visaInstance, err
 }

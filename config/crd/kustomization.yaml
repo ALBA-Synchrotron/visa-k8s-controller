@@ -2,10 +2,10 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/cloudprovider.visa.k8s_visainstances.yaml
+- bases/cloudprovider.visa.k8s_visacloudinstances.yaml
 - bases/cloudprovider.visa.k8s_visacloudflavours.yaml
 - bases/cloudprovider.visa.k8s_visacloudimages.yaml
-- bases/cloudprovider.visa.k8s_visasidecarconfigs.yaml
+- bases/cloudprovider.visa.k8s_visacloudsidecarconfigs.yaml
 - bases/cloudprovider.visa.k8s_visacloudsecuritygroups.yaml
 - bases/cloudprovider.visa.k8s_visaclouddevices.yaml
 # +kubebuilder:scaffold:crdkustomizeresource

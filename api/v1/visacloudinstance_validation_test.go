@@ -7,14 +7,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = ginkgo.Describe("VISAInstance validation", func() {
+var _ = ginkgo.Describe("VISACloudInstance validation", func() {
 	ginkgo.It("accepts valid object", func() {
-		device := &VISAInstance{
+		device := &VISACloudInstance{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-visa-instance",
 				Namespace: "default",
 			},
-			Spec: VISAInstanceSpec{
+			Spec: VISACloudInstanceSpec{
 				Image: corev1.LocalObjectReference{
 					Name: "test-image",
 				},
@@ -28,12 +28,12 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 	})
 
 	ginkgo.It("rejects empty image reference", func() {
-		device := &VISAInstance{
+		device := &VISACloudInstance{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-visa-instance",
 				Namespace: "default",
 			},
-			Spec: VISAInstanceSpec{
+			Spec: VISACloudInstanceSpec{
 				Image: corev1.LocalObjectReference{
 					Name: "",
 				},
@@ -48,12 +48,12 @@ var _ = ginkgo.Describe("VISAInstance validation", func() {
 	})
 
 	ginkgo.It("rejects invalid desired state", func() {
-		device := &VISAInstance{
+		device := &VISACloudInstance{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-visa-instance",
 				Namespace: "default",
 			},
-			Spec: VISAInstanceSpec{
+			Spec: VISACloudInstanceSpec{
 				Image: corev1.LocalObjectReference{
 					Name: "",
 				},

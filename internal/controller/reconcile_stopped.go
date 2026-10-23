@@ -8,7 +8,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func (r *VISAInstanceReconciler) reconcileStopped(ctx context.Context, instance *cloudproviderv1.VISAInstance) (ctrl.Result, error) {
+func (r *VISACloudInstanceReconciler) reconcileStopped(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) (ctrl.Result, error) {
 
 	if err := r.deletePod(ctx, instance); err != nil {
 		return ctrl.Result{}, err

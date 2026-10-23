@@ -53,10 +53,10 @@ var _ = Describe("Manager", Ordered, func() {
 	// and deploying the controller.
 	BeforeAll(func() {
 		crds := []string{
-			"visainstances.cloudprovider.visa.k8s",
+			"visacloudinstances.cloudprovider.visa.k8s",
 			"visacloudflavours.cloudprovider.visa.k8s",
 			"visacloudimages.cloudprovider.visa.k8s",
-			"visasidecarconfigs.cloudprovider.visa.k8s",
+			"visacloudsidecarconfigs.cloudprovider.visa.k8s",
 			"visacloudsecuritygroups.cloudprovider.visa.k8s",
 			"visaclouddevices.cloudprovider.visa.k8s",
 		}
@@ -64,7 +64,7 @@ var _ = Describe("Manager", Ordered, func() {
 		By("cleaning up previous test state and removing finalizers")
 		cmd := exec.Command("kubectl", "delete", "clusterrolebinding", metricsRoleBindingName, "--ignore-not-found")
 		_, _ = utils.Run(cmd)
-		cmd = exec.Command("kubectl", "patch", "visainstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+		cmd = exec.Command("kubectl", "patch", "visacloudinstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
 		_, _ = utils.Run(cmd)
 		cmd = exec.Command("kubectl", "delete", "pod", "visainstance-sample-runtime", "-n", "default", "--ignore-not-found", "--force", "--grace-period=0")
 		_, _ = utils.Run(cmd)
@@ -120,7 +120,7 @@ var _ = Describe("Manager", Ordered, func() {
 		_, _ = utils.Run(cmd)
 
 		By("cleaning up any sample resources and removing finalizers")
-		cmd = exec.Command("kubectl", "patch", "visainstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+		cmd = exec.Command("kubectl", "patch", "visacloudinstance", "visainstance-sample", "-n", "default", "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
 		_, _ = utils.Run(cmd)
 		cmd = exec.Command("kubectl", "delete", "pod", "visainstance-sample-runtime", "-n", "default", "--ignore-not-found", "--force", "--grace-period=0")
 		_, _ = utils.Run(cmd)
@@ -316,11 +316,11 @@ var _ = Describe("Manager", Ordered, func() {
 
 		// +kubebuilder:scaffold:e2e-webhooks-checks
 
-		It("should successfully reconcile, reboot, stop, and restart a VISAInstance", func() {
+		It("should successfully reconcile, reboot, stop, and restart a VISACloudInstance", func() {
 			const instanceName = "visainstance-sample"
 			const instanceNamespace = "default"
 
-			By("applying the samples for VISAInstance and dependencies")
+			By("applying the samples for VISACloudInstance and dependencies")
 			applySamples := func(g Gomega) {
 				cmd := exec.Command("kubectl", "apply", "-k", "config/samples/", "-n", instanceNamespace)
 				output, err := utils.Run(cmd)
@@ -330,7 +330,7 @@ var _ = Describe("Manager", Ordered, func() {
 
 			DeferCleanup(func() {
 				By("cleaning up the sample resources")
-				cmd := exec.Command("kubectl", "patch", "visainstance", instanceName, "-n", instanceNamespace, "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
+				cmd := exec.Command("kubectl", "patch", "visacloudinstance", instanceName, "-n", instanceNamespace, "-p", `{"metadata":{"finalizers":[]}}`, "--type=merge")
 				_, _ = utils.Run(cmd)
 
 				cmd = exec.Command("kubectl", "delete", "pod", instanceName+"-runtime", "-n", instanceNamespace, "--ignore-not-found", "--force", "--grace-period=0")
@@ -340,8 +340,8 @@ var _ = Describe("Manager", Ordered, func() {
 				_, _ = utils.Run(cmd)
 			})
 
-			By("setting the VISAInstance to ACTIVE")
-			cmd := exec.Command("kubectl", "patch", "visainstance", instanceName,
+			By("setting the VISACloudInstance to ACTIVE")
+			cmd := exec.Command("kubectl", "patch", "visacloudinstance", instanceName,
 				"-n", instanceNamespace,
 				"--type=merge",
 				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)
@@ -359,9 +359,9 @@ var _ = Describe("Manager", Ordered, func() {
 			}
 			Eventually(verifyPodCreated, 2*time.Minute, time.Second).Should(Succeed())
 
-			By("verifying the VISAInstance status has provisioned condition")
+			By("verifying the VISACloudInstance status has provisioned condition")
 			verifyInstanceProvisioned := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+				cmd := exec.Command("kubectl", "get", "visacloudinstance", instanceName,
 					"-n", instanceNamespace,
 					"-o", "jsonpath={.status.conditions[?(@.type=='Provisioned')].status}")
 				output, err := utils.Run(cmd)
@@ -371,7 +371,7 @@ var _ = Describe("Manager", Ordered, func() {
 			Eventually(verifyInstanceProvisioned, 2*time.Minute, time.Second).Should(Succeed())
 
 			By("rebooting the instance by incrementing rebootGeneration")
-			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+			cmd = exec.Command("kubectl", "patch", "visacloudinstance", instanceName,
 				"-n", instanceNamespace,
 				"--type=merge",
 				"-p", `{"spec":{"rebootGeneration":1}}`)
@@ -379,7 +379,7 @@ var _ = Describe("Manager", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred(), "Failed to increment rebootGeneration")
 
 			By("verifying the instance is stopping when desiredState is STOPPED")
-			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+			cmd = exec.Command("kubectl", "patch", "visacloudinstance", instanceName,
 				"-n", instanceNamespace,
 				"--type=merge",
 				"-p", `{"spec":{"desiredState":"STOPPED"}}`)
@@ -398,7 +398,7 @@ var _ = Describe("Manager", Ordered, func() {
 
 			By("verifying the instance status is STOPPED")
 			verifyInstanceStopped := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "visainstance", instanceName,
+				cmd := exec.Command("kubectl", "get", "visacloudinstance", instanceName,
 					"-n", instanceNamespace,
 					"-o", "jsonpath={.status.state}")
 				output, err := utils.Run(cmd)
@@ -408,7 +408,7 @@ var _ = Describe("Manager", Ordered, func() {
 			Eventually(verifyInstanceStopped, 2*time.Minute, time.Second).Should(Succeed())
 
 			By("restarting the instance by setting desiredState back to ACTIVE")
-			cmd = exec.Command("kubectl", "patch", "visainstance", instanceName,
+			cmd = exec.Command("kubectl", "patch", "visacloudinstance", instanceName,
 				"-n", instanceNamespace,
 				"--type=merge",
 				"-p", `{"spec":{"desiredState":"ACTIVE"}}`)

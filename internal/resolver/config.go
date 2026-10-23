@@ -12,7 +12,7 @@ import (
 type ResolvedConfig struct {
 	Image          *cloudproviderv1.VISACloudImage
 	Flavour        *cloudproviderv1.VISACloudFlavour
-	Sidecars       []*cloudproviderv1.VISASidecarConfig
+	Sidecars       []*cloudproviderv1.VISACloudSidecarConfig
 	SecurityGroups []*cloudproviderv1.VISACloudSecurityGroup
 }
 
@@ -49,16 +49,16 @@ func (c *ConfigResolver) getFlavour(ctx context.Context, namespace string, name 
 	return flavour, nil
 }
 
-func (c *ConfigResolver) getSidecarConfigs(ctx context.Context, namespace string, sidecars []corev1.LocalObjectReference) ([]*cloudproviderv1.VISASidecarConfig, error) {
+func (c *ConfigResolver) getSidecarConfigs(ctx context.Context, namespace string, sidecars []corev1.LocalObjectReference) ([]*cloudproviderv1.VISACloudSidecarConfig, error) {
 
 	sidecarConfigs := make(
-		[]*cloudproviderv1.VISASidecarConfig,
+		[]*cloudproviderv1.VISACloudSidecarConfig,
 		0,
 		len(sidecars))
 
 	for _, sidecarRef := range sidecars {
 		name := sidecarRef.Name
-		sidecar := &cloudproviderv1.VISASidecarConfig{}
+		sidecar := &cloudproviderv1.VISACloudSidecarConfig{}
 		if err := c.get(ctx, namespace, name, sidecar); err != nil {
 			return nil, fmt.Errorf("getting cloud sidecar %q: %w", name, err)
 		}
@@ -92,7 +92,7 @@ func New(client client.Client) *ConfigResolver {
 	}
 }
 
-func (c *ConfigResolver) ResolveConfiguration(ctx context.Context, visaInstance *cloudproviderv1.VISAInstance) (*ResolvedConfig, error) {
+func (c *ConfigResolver) ResolveConfiguration(ctx context.Context, visaInstance *cloudproviderv1.VISACloudInstance) (*ResolvedConfig, error) {
 	image, err := c.getImage(ctx, visaInstance.Namespace, visaInstance.Spec.Image.Name)
 	if err != nil {
 		return nil, err

@@ -16,12 +16,23 @@ limitations under the License.
 
 package v1
 
-type VISAInstanceStatus struct {
+type VISACloudInstanceStatusError struct {
+	// +optional
+	Message string `json:"message,omitempty"`
+	// +optional
+	Code string `json:"code,omitempty"`
+	// +optional
+	Details string `json:"details,omitempty"`
+	// +optional
+	CreatedAt string `json:"createdAt,omitempty"`
+}
+
+type VISACloudInstanceStatus struct {
 
 	// +listType=map
 	// +listMapKey=type
 	// +optional
-	Conditions []VISAInstanceCondition `json:"conditions,omitempty"`
+	Conditions []VISACloudInstanceCondition `json:"conditions,omitempty"`
 	// +required
 	// +kubebuilder:validation:Enum:=ACTIVE;PARTIALLY_ACTIVE;BUILDING;DELETED;DELETING;ERROR;STARTING;STOPPED;STOPPING;REBOOTING;UNAVAILABLE;UNKNOWN
 	State InstanceState `json:"state"`
@@ -30,5 +41,5 @@ type VISAInstanceStatus struct {
 	// +optional
 	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
 	// +optional
-	Error string `json:"error,omitempty"`
+	Error VISACloudInstanceStatusError `json:"error,omitempty"`
 }

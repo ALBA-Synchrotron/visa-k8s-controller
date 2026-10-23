@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *VISAInstanceReconciler) reconcileActive(ctx context.Context, visaInstance *cloudproviderv1.VISAInstance) (ctrl.Result, error) {
+func (r *VISACloudInstanceReconciler) reconcileActive(ctx context.Context, visaInstance *cloudproviderv1.VISACloudInstance) (ctrl.Result, error) {
 
 	resolvedConfig, err := resolver.New(r.Client).ResolveConfiguration(ctx, visaInstance)
 	if err != nil {

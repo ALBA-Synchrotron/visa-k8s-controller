@@ -155,22 +155,22 @@ func TestDeepCopyTypes(t *testing.T) {
 	g.Expect(sgList.DeepCopyObject()).To(Equal(sgList))
 
 	// VISAInstance
-	var nilInst *VISAInstance
+	var nilInst *VISACloudInstance
 	g.Expect(nilInst.DeepCopy()).To(BeNil())
 	g.Expect(nilInst.DeepCopyObject()).To(BeNil())
 
 	addr := "1.2.3.4"
-	inst := &VISAInstance{
+	inst := &VISACloudInstance{
 		ObjectMeta: metav1.ObjectMeta{Name: "inst1"},
-		Spec: VISAInstanceSpec{
+		Spec: VISACloudInstanceSpec{
 			Image:               corev1.LocalObjectReference{Name: "img1"},
 			Flavour:             corev1.LocalObjectReference{Name: "flav1"},
 			SecurityGroups:      []corev1.LocalObjectReference{{Name: "sg1"}},
 			AssociatedProposals: []string{"prop1"},
 		},
-		Status: VISAInstanceStatus{
+		Status: VISACloudInstanceStatus{
 			Address: &addr,
-			Conditions: []VISAInstanceCondition{
+			Conditions: []VISACloudInstanceCondition{
 				{Type: Ready, Status: corev1.ConditionTrue},
 			},
 		},
@@ -178,54 +178,54 @@ func TestDeepCopyTypes(t *testing.T) {
 	g.Expect(inst.DeepCopy()).To(Equal(inst))
 	g.Expect(inst.DeepCopyObject()).To(Equal(inst))
 
-	var nilInstList *VISAInstanceList
+	var nilInstList *VISACloudInstanceList
 	g.Expect(nilInstList.DeepCopy()).To(BeNil())
 	g.Expect(nilInstList.DeepCopyObject()).To(BeNil())
 
-	instList := &VISAInstanceList{
-		Items: []VISAInstance{*inst},
+	instList := &VISACloudInstanceList{
+		Items: []VISACloudInstance{*inst},
 	}
 	g.Expect(instList.DeepCopy()).To(Equal(instList))
 	g.Expect(instList.DeepCopyObject()).To(Equal(instList))
 
-	var nilInstSpec *VISAInstanceSpec
+	var nilInstSpec *VISACloudInstanceSpec
 	g.Expect(nilInstSpec.DeepCopy()).To(BeNil())
 	g.Expect(inst.Spec.DeepCopy()).To(Equal(&inst.Spec))
 
-	var nilInstStatus *VISAInstanceStatus
+	var nilInstStatus *VISACloudInstanceStatus
 	g.Expect(nilInstStatus.DeepCopy()).To(BeNil())
 	g.Expect(inst.Status.DeepCopy()).To(Equal(&inst.Status))
 
-	var nilCond *VISAInstanceCondition
+	var nilCond *VISACloudInstanceCondition
 	g.Expect(nilCond.DeepCopy()).To(BeNil())
-	cond := &VISAInstanceCondition{Type: Ready, Status: corev1.ConditionTrue}
+	cond := &VISACloudInstanceCondition{Type: Ready, Status: corev1.ConditionTrue}
 	g.Expect(cond.DeepCopy()).To(Equal(cond))
 
 	// VISASidecarConfig
-	var nilSC *VISASidecarConfig
+	var nilSC *VISACloudSidecarConfig
 	g.Expect(nilSC.DeepCopy()).To(BeNil())
 	g.Expect(nilSC.DeepCopyObject()).To(BeNil())
 
-	sc := &VISASidecarConfig{
+	sc := &VISACloudSidecarConfig{
 		ObjectMeta: metav1.ObjectMeta{Name: "sc1"},
-		Spec: VISASidecarConfigSpec{
+		Spec: VISACloudSidecarConfigSpec{
 			ContainerSpec: *cs,
 		},
 	}
 	g.Expect(sc.DeepCopy()).To(Equal(sc))
 	g.Expect(sc.DeepCopyObject()).To(Equal(sc))
 
-	var nilSCList *VISASidecarConfigList
+	var nilSCList *VISACloudSidecarConfigList
 	g.Expect(nilSCList.DeepCopy()).To(BeNil())
 	g.Expect(nilSCList.DeepCopyObject()).To(BeNil())
 
-	scList := &VISASidecarConfigList{
-		Items: []VISASidecarConfig{*sc},
+	scList := &VISACloudSidecarConfigList{
+		Items: []VISACloudSidecarConfig{*sc},
 	}
 	g.Expect(scList.DeepCopy()).To(Equal(scList))
 	g.Expect(scList.DeepCopyObject()).To(Equal(scList))
 
-	var nilSCSpec *VISASidecarConfigSpec
+	var nilSCSpec *VISACloudSidecarConfigSpec
 	g.Expect(nilSCSpec.DeepCopy()).To(BeNil())
 	g.Expect(sc.Spec.DeepCopy()).To(Equal(&sc.Spec))
 }

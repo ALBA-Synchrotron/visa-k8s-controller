@@ -11,17 +11,17 @@ metadata:
   labels:
     app.kubernetes.io/name: visa-k8s-controller
     app.kubernetes.io/managed-by: kustomize
-  name: visasidecarconfig-admin-role
+  name: visacloudsidecarconfig-admin-role
 rules:
 - apiGroups:
   - cloudprovider.visa.k8s
   resources:
-  - visasidecarconfigs
+  - visacloudsidecarconfigs
   verbs:
   - '*'
 - apiGroups:
   - cloudprovider.visa.k8s
   resources:
-  - visasidecarconfigs/status
+  - visacloudsidecarconfigs/status
   verbs:
   - get

@@ -6,17 +6,17 @@ import (
 )
 
 const (
-	Ready       VISAInstanceConditionType = "Ready"
-	Provisioned VISAInstanceConditionType = "Provisioned"
+	Ready       VISACloudInstanceConditionType = "Ready"
+	Provisioned VISACloudInstanceConditionType = "Provisioned"
 )
 
-type VISAInstanceConditionType string
+type VISACloudInstanceConditionType string
 
 // +kubebuilder:object:generate=true
 
-type VISAInstanceCondition struct {
+type VISACloudInstanceCondition struct {
 	// +required
-	Type VISAInstanceConditionType `json:"type"`
+	Type VISACloudInstanceConditionType `json:"type"`
 	// +required
 	Status corev1.ConditionStatus `json:"status"`
 	// +optional
@@ -27,17 +27,17 @@ type VISAInstanceCondition struct {
 	Message string `json:"message,omitempty"`
 }
 
-func newVISAInstanceCondition(t VISAInstanceConditionType) VISAInstanceCondition {
-	return VISAInstanceCondition{
+func newVISAInstanceCondition(t VISACloudInstanceConditionType) VISACloudInstanceCondition {
+	return VISACloudInstanceCondition{
 		Type:               t,
 		Status:             corev1.ConditionUnknown,
 		LastTransitionTime: metav1.Now(),
 	}
 }
 
-func (s *VISAInstanceStatus) GetCondition(
-	t VISAInstanceConditionType,
-) *VISAInstanceCondition {
+func (s *VISACloudInstanceStatus) GetCondition(
+	t VISACloudInstanceConditionType,
+) *VISACloudInstanceCondition {
 	for i := range s.Conditions {
 		if s.Conditions[i].Type == t {
 			return &s.Conditions[i]
@@ -48,7 +48,7 @@ func (s *VISAInstanceStatus) GetCondition(
 	return &s.Conditions[len(s.Conditions)-1]
 }
 
-func (c *VISAInstanceCondition) Set(
+func (c *VISACloudInstanceCondition) Set(
 	status corev1.ConditionStatus,
 	reason string,
 	message string,

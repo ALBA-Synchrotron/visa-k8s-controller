@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: visasidecarconfigs.cloudprovider.visa.k8s
+  name: visacloudsidecarconfigs.cloudprovider.visa.k8s
 spec:
   group: cloudprovider.visa.k8s
   names:
-    kind: VISASidecarConfig
-    listKind: VISASidecarConfigList
-    plural: visasidecarconfigs
-    singular: visasidecarconfig
+    kind: VISACloudSidecarConfig
+    listKind: VISACloudSidecarConfigList
+    plural: visacloudsidecarconfigs
+    singular: visacloudsidecarconfig
   scope: Namespaced
   versions:
   - name: v1

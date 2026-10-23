@@ -32,7 +32,7 @@ func copyMap(src map[string]string) map[string]string {
 	return dst
 }
 
-func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.ResolvedConfig, imagePullSecrets []corev1.LocalObjectReference) *corev1.Pod {
+func (PodBuilder) Build(visaInstance *v1.VISACloudInstance, config *resolver.ResolvedConfig, imagePullSecrets []corev1.LocalObjectReference) *corev1.Pod {
 
 	containers := make([]corev1.Container, 0, len(config.Sidecars)+1)
 
@@ -71,7 +71,7 @@ func (PodBuilder) Build(visaInstance *v1.VISAInstance, config *resolver.Resolved
 		},
 	}
 
-	annotations["cloudprovider.visa.k8s/spec-hash"] = HashVISAInstanceSpec(visaInstance.Spec)
+	annotations["cloudprovider.visa.k8s/spec-hash"] = HashVISACloudInstanceSpec(visaInstance.Spec)
 
 	return pod
 }

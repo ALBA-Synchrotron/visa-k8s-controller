@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
-func HashVISAInstanceSpec(spec v1.VISAInstanceSpec) string {
+func HashVISACloudInstanceSpec(spec v1.VISACloudInstanceSpec) string {
 	data, err := json.Marshal(spec)
 	if err != nil {
 		panic(err)

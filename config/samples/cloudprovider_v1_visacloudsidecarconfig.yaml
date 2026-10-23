@@ -1,5 +1,5 @@
 apiVersion: cloudprovider.visa.k8s/v1
-kind: VISASidecarConfig
+kind: VISACloudSidecarConfig
 metadata:
   labels:
     app.kubernetes.io/name: visa-k8s-controller

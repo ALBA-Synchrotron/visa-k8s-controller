@@ -10,9 +10,9 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *VISAInstanceReconciler) reconcilePod(
+func (r *VISACloudInstanceReconciler) reconcilePod(
 	ctx context.Context,
-	instance *cloudproviderv1.VISAInstance,
+	instance *cloudproviderv1.VISACloudInstance,
 	desired *corev1.Pod,
 ) error {
 	logger := logf.FromContext(ctx)
@@ -83,7 +83,7 @@ func (r *VISAInstanceReconciler) reconcilePod(
 	return nil
 }
 
-func (r *VISAInstanceReconciler) deletePod(ctx context.Context, instance *cloudproviderv1.VISAInstance) error {
+func (r *VISACloudInstanceReconciler) deletePod(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) error {
 	pod := &corev1.Pod{}
 
 	err := r.Get(ctx, client.ObjectKey{
@@ -132,7 +132,7 @@ func (r *VISAInstanceReconciler) deletePod(ctx context.Context, instance *cloudp
 	return nil
 }
 
-func (r *VISAInstanceReconciler) getPod(ctx context.Context, instance *cloudproviderv1.VISAInstance) (*corev1.Pod, error) {
+func (r *VISACloudInstanceReconciler) getPod(ctx context.Context, instance *cloudproviderv1.VISACloudInstance) (*corev1.Pod, error) {
 
 	pod := &corev1.Pod{}
 

@@ -9,9 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *VISAInstanceReconciler) syncStatusFromPod(
+func (r *VISACloudInstanceReconciler) syncStatusFromPod(
 	ctx context.Context,
-	instance *cloudproviderv1.VISAInstance,
+	instance *cloudproviderv1.VISACloudInstance,
 	pod *corev1.Pod,
 ) error {
 	patch := client.MergeFrom(instance.DeepCopy())
@@ -22,7 +22,7 @@ func (r *VISAInstanceReconciler) syncStatusFromPod(
 		instance.Status.Address = nil
 	}
 
-	specHash := resource.HashVISAInstanceSpec(instance.Spec)
+	specHash := resource.HashVISACloudInstanceSpec(instance.Spec)
 
 	if specHash == pod.Annotations["cloudprovider.visa.k8s/spec-hash"] &&
 		pod.Status.Phase == corev1.PodRunning {
@@ -73,9 +73,9 @@ func (r *VISAInstanceReconciler) syncStatusFromPod(
 	return r.Status().Patch(ctx, instance, patch)
 }
 
-func (r *VISAInstanceReconciler) syncStatusWithoutPod(
+func (r *VISACloudInstanceReconciler) syncStatusWithoutPod(
 	ctx context.Context,
-	instance *cloudproviderv1.VISAInstance,
+	instance *cloudproviderv1.VISACloudInstance,
 ) error {
 	patch := client.MergeFrom(instance.DeepCopy())
 
@@ -100,7 +100,7 @@ func (r *VISAInstanceReconciler) syncStatusWithoutPod(
 	return r.Status().Patch(ctx, instance, patch)
 }
 
-func syncConditions(instance *cloudproviderv1.VISAInstance) {
+func syncConditions(instance *cloudproviderv1.VISACloudInstance) {
 	ready := instance.Status.GetCondition(cloudproviderv1.Ready)
 	provisioned := instance.Status.GetCondition(cloudproviderv1.Provisioned)
 

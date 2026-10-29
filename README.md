@@ -9,7 +9,7 @@ an OpenStack infrastructure to enable scientific users to analyse their experime
 browser.
 
 This project consists of a Kubernetes controller that manages the lifecycle of VISA instances on top of Kubernetes. The
-controller is expected to be deployed through the dedicated Helm chart (https://github.com/ALBA-Synchrotron/visa-k8s-controller-helm).
+controller is expected to be deployed through the dedicated Helm chart (https://github.com/ALBA-Synchrotron/visa-k8s-helm).
 
 This project has been bootstrapped using [Kubebuilder](https://sigs.k8s.io/kubebuilder).
 

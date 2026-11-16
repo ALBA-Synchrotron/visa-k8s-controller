@@ -134,7 +134,7 @@ spec:
               error:
                 properties:
                   code:
-                    type: string
+                    type: integer
                   createdAt:
                     type: string
                   details:

@@ -20,7 +20,7 @@ type VISACloudInstanceStatusError struct {
 	// +optional
 	Message string `json:"message,omitempty"`
 	// +optional
-	Code string `json:"code,omitempty"`
+	Code int `json:"code,omitempty"`
 	// +optional
 	Details string `json:"details,omitempty"`
 	// +optional

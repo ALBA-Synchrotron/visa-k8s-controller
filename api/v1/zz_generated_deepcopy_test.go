@@ -205,7 +205,7 @@ func TestDeepCopyTypes(t *testing.T) {
 	g.Expect(nilErr.DeepCopy()).To(BeNil())
 	errObj := &VISACloudInstanceStatusError{
 		Message:   "msg",
-		Code:      "code",
+		Code:      0,
 		Details:   "details",
 		CreatedAt: "2026-10-23T12:00:00Z",
 	}

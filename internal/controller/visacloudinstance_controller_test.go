@@ -494,7 +494,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			inst := &cloudproviderv1.VISACloudInstance{}
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("0/1 nodes available: insufficient memory"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodScheduled"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodePodScheduling))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("0/1 nodes available: insufficient memory"))
 
 			// 2. Container waiting state
@@ -519,7 +519,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Back-off pulling image"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("ImagePullBackOff"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodeImagePull))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Back-off pulling image"))
 
 			// 3. Container terminated state
@@ -543,7 +543,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Container killed due to OOM"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("OOMKilled"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodeOOMKilled))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Container killed due to OOM"))
 
 			// 4. Pod in PodFailed phase
@@ -560,7 +560,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.State).To(gomega.Equal(cloudproviderv1.StateError))
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Node was evicted"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodePodFailed))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal("Node was evicted"))
 
 			// 5. Pod in PodFailed phase with Reason only
@@ -575,7 +575,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Evicted"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Evicted"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodePodEvicted))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 6. Pod in PodFailed phase without reason/message
@@ -589,7 +589,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 
 			gomega.Expect(k8sClient.Get(ctx, typeNamespacedName, inst)).To(gomega.Succeed())
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Pod failed"))
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("PodFailed"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodePodFailed))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
 			// 7. Pod in PodSucceeded phase
@@ -641,7 +641,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 			}
 			inst.Spec.DesiredState = cloudproviderv1.DesiredStateActive
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("CrashLoopBackOff"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodeCrashLoopBackOff))
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("CrashLoopBackOff"))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 
@@ -671,7 +671,7 @@ var _ = ginkgo.Describe("VISACloudInstance Controller", func() {
 				},
 			}
 			_ = controllerReconciler.syncStatusFromPod(ctx, inst, pod)
-			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal("Error"))
+			gomega.Expect(inst.Status.Error.Code).To(gomega.Equal(errCodeContainerError))
 			gomega.Expect(inst.Status.Error.Message).To(gomega.Equal("Error"))
 			gomega.Expect(inst.Status.Error.Details).To(gomega.Equal(""))
 

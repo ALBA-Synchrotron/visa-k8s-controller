@@ -11,6 +11,38 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	errCodeUnknown = 0
+
+	// Scheduling (1000s)
+	errCodePodScheduling = 1000 // generic PodScheduled=False
+	errCodeUnschedulable = 1001
+	errCodeSchedulerErr  = 1002
+
+	// Container waiting states (2000s)
+	errCodeImagePull        = 2000 // ErrImagePull, ImagePullBackOff, ErrImageNeverPull, InvalidImageName
+	errCodeCrashLoopBackOff = 2001
+	errCodeContainerConfig  = 2002 // CreateContainerConfigError
+	errCodeCreateContainer  = 2003 // CreateContainerError, RunContainerError
+	errCodeWaitingOther     = 2099
+
+	// Container terminated states (3000s)
+	errCodeContainerError     = 3000 // Reason "Error"
+	errCodeOOMKilled          = 3001
+	errCodeContainerCannotRun = 3002
+	errCodeDeadlineExceeded   = 3003
+	errCodeContainerExitCode  = 3004 // no reason, non-zero exit code
+	errCodeTerminatedOther    = 3099
+
+	// Pod phase failures (4000s)
+	errCodePodFailed       = 4000 // generic PodFailed
+	errCodePodEvicted      = 4001
+	errCodePodNodeLost     = 4002
+	errCodePodShutdown     = 4003
+	errCodePodAdmissionErr = 4004 // UnexpectedAdmissionError
+	errCodePodFailedOther  = 4099
+)
+
 func (r *VISACloudInstanceReconciler) syncStatusFromPod(
 	ctx context.Context,
 	instance *cloudproviderv1.VISACloudInstance,
@@ -234,6 +266,19 @@ func podErrorSummary(pod *corev1.Pod) cloudproviderv1.VISACloudInstanceStatusErr
 	return cloudproviderv1.VISACloudInstanceStatusError{}
 }
 
+func codeFromReason(reason string) int {
+	switch reason {
+	case corev1.PodReasonUnschedulable: // "Unschedulable"
+		return errCodeUnschedulable
+	case corev1.PodReasonSchedulerError: // "SchedulerError"
+		return errCodeSchedulerErr
+	case "":
+		return errCodePodScheduling
+	default:
+		return errCodeUnknown
+	}
+}
+
 func errorFromConditions(conditions []corev1.PodCondition) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
 	for _, condition := range conditions {
 		if condition.Type == corev1.PodScheduled &&
@@ -243,23 +288,46 @@ func errorFromConditions(conditions []corev1.PodCondition) (cloudproviderv1.VISA
 			if !condition.LastTransitionTime.IsZero() {
 				createdAt = condition.LastTransitionTime.UTC().Format(time.RFC3339)
 			}
-			code := condition.Reason
-			if code == "" {
-				code = string(condition.Type)
-			}
+
 			message := condition.Message
 			if message == "" {
 				message = condition.Reason
 			}
+
+			// Preserve the textual reason, since Code is now numeric.
+			details := condition.Message
+			if condition.Reason != "" {
+				if details != "" {
+					details = condition.Reason + ": " + details
+				} else {
+					details = condition.Reason
+				}
+			}
+
 			return cloudproviderv1.VISACloudInstanceStatusError{
-				Code:      code,
+				Code:      codeFromReason(condition.Reason),
 				Message:   message,
-				Details:   condition.Message,
+				Details:   details,
 				CreatedAt: createdAt,
 			}, true
 		}
 	}
 	return cloudproviderv1.VISACloudInstanceStatusError{}, false
+}
+
+func codeFromWaitingReason(reason string) int {
+	switch reason {
+	case "ErrImagePull", "ImagePullBackOff", "ErrImageNeverPull", "InvalidImageName":
+		return errCodeImagePull
+	case "CrashLoopBackOff":
+		return errCodeCrashLoopBackOff
+	case "CreateContainerConfigError":
+		return errCodeContainerConfig
+	case "CreateContainerError", "RunContainerError":
+		return errCodeCreateContainer
+	default:
+		return errCodeWaitingOther
+	}
 }
 
 func errorFromWaitingState(pod *corev1.Pod, waiting *corev1.ContainerStateWaiting) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
@@ -286,11 +354,28 @@ func errorFromWaitingState(pod *corev1.Pod, waiting *corev1.ContainerStateWaitin
 	}
 
 	return cloudproviderv1.VISACloudInstanceStatusError{
-		Code:      waiting.Reason,
+		Code:      codeFromWaitingReason(waiting.Reason),
 		Message:   message,
 		Details:   waiting.Message,
 		CreatedAt: createdAt,
 	}, true
+}
+
+func codeFromTerminatedState(terminated *corev1.ContainerStateTerminated) int {
+	switch terminated.Reason {
+	case "":
+		return errCodeContainerExitCode
+	case "Error":
+		return errCodeContainerError
+	case "OOMKilled":
+		return errCodeOOMKilled
+	case "ContainerCannotRun":
+		return errCodeContainerCannotRun
+	case "DeadlineExceeded":
+		return errCodeDeadlineExceeded
+	default:
+		return errCodeTerminatedOther
+	}
 }
 
 func errorFromTerminatedState(terminated *corev1.ContainerStateTerminated) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
@@ -305,11 +390,6 @@ func errorFromTerminatedState(terminated *corev1.ContainerStateTerminated) (clou
 		createdAt = terminated.StartedAt.UTC().Format(time.RFC3339)
 	}
 
-	code := terminated.Reason
-	if code == "" {
-		code = fmt.Sprintf("ExitCode%d", terminated.ExitCode)
-	}
-
 	message := terminated.Message
 	if message == "" {
 		if terminated.Reason != "" {
@@ -320,7 +400,7 @@ func errorFromTerminatedState(terminated *corev1.ContainerStateTerminated) (clou
 	}
 
 	return cloudproviderv1.VISACloudInstanceStatusError{
-		Code:      code,
+		Code:      codeFromTerminatedState(terminated),
 		Message:   message,
 		Details:   terminated.Message,
 		CreatedAt: createdAt,
@@ -342,6 +422,23 @@ func errorFromContainerStatuses(pod *corev1.Pod) (cloudproviderv1.VISACloudInsta
 	return cloudproviderv1.VISACloudInstanceStatusError{}, false
 }
 
+func codeFromPodFailedReason(reason string) int {
+	switch reason {
+	case "":
+		return errCodePodFailed
+	case "Evicted":
+		return errCodePodEvicted
+	case "NodeLost":
+		return errCodePodNodeLost
+	case "Shutdown", "Terminated":
+		return errCodePodShutdown
+	case "UnexpectedAdmissionError":
+		return errCodePodAdmissionErr
+	default:
+		return errCodePodFailedOther
+	}
+}
+
 func errorFromPodPhase(pod *corev1.Pod) (cloudproviderv1.VISACloudInstanceStatusError, bool) {
 	if pod.Status.Phase != corev1.PodFailed {
 		return cloudproviderv1.VISACloudInstanceStatusError{}, false
@@ -355,11 +452,6 @@ func errorFromPodPhase(pod *corev1.Pod) (cloudproviderv1.VISACloudInstanceStatus
 		createdAt = pod.Status.StartTime.UTC().Format(time.RFC3339)
 	}
 
-	code := pod.Status.Reason
-	if code == "" {
-		code = "PodFailed"
-	}
-
 	message := pod.Status.Message
 	if message == "" {
 		if pod.Status.Reason != "" {
@@ -370,7 +462,7 @@ func errorFromPodPhase(pod *corev1.Pod) (cloudproviderv1.VISACloudInstanceStatus
 	}
 
 	return cloudproviderv1.VISACloudInstanceStatusError{
-		Code:      code,
+		Code:      codeFromPodFailedReason(pod.Status.Reason),
 		Message:   message,
 		Details:   pod.Status.Message,
 		CreatedAt: createdAt,

@@ -142,6 +142,9 @@ spec:
                   message:
                     type: string
                 type: object
+              observedGeneration:
+                format: int64
+                type: integer
               observedRebootGeneration:
                 format: int64
                 type: integer

@@ -50,6 +50,8 @@ func (r *VISACloudInstanceReconciler) syncStatusFromPod(
 ) error {
 	patch := client.MergeFrom(instance.DeepCopy())
 
+	instance.Status.ObservedGeneration = instance.Generation
+
 	if pod.Status.Phase == corev1.PodRunning && pod.Status.PodIP != "" {
 		instance.Status.Address = &pod.Status.PodIP
 	} else {
@@ -112,6 +114,8 @@ func (r *VISACloudInstanceReconciler) syncStatusWithoutPod(
 	instance *cloudproviderv1.VISACloudInstance,
 ) error {
 	patch := client.MergeFrom(instance.DeepCopy())
+
+	instance.Status.ObservedGeneration = instance.Generation
 
 	instance.Status.Address = nil
 

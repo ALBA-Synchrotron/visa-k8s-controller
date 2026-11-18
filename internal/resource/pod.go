@@ -36,14 +36,16 @@ func (PodBuilder) Build(visaInstance *v1.VISACloudInstance, config *resolver.Res
 
 	containers := make([]corev1.Container, 0, len(config.Sidecars)+1)
 
-	labels := copyMap(visaInstance.Labels)
-	labels["cloudprovider.visa.k8s/managed"] = "true"
-
 	securityGroupsNames := make([]string, 0, len(visaInstance.Spec.SecurityGroups))
 
 	for _, sg := range config.SecurityGroups {
 		securityGroupsNames = append(securityGroupsNames, sg.Name)
 	}
+
+	labels := copyMap(visaInstance.Labels)
+	labels["cloudprovider.visa.k8s/managed"] = "true"
+	labels["cloudprovider.visa.k8s/visa-image"] = config.Image.Name
+	labels["cloudprovider.visa.k8s/visa-flavour"] = config.Flavour.Name
 
 	annotations := copyMap(visaInstance.Annotations)
 	annotations["cloudprovider.visa.k8s/security-groups"] = strings.Join(securityGroupsNames, ",")

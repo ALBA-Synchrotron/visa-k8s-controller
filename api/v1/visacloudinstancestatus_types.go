@@ -42,4 +42,6 @@ type VISACloudInstanceStatus struct {
 	ObservedRebootGeneration int64 `json:"observedRebootGeneration,omitempty"`
 	// +optional
 	Error VISACloudInstanceStatusError `json:"error,omitempty"`
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
